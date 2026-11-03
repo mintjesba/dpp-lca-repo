@@ -1,0 +1,9 @@
+# Normalise line endings for text files; keep Windows endings in working copies on Windows
+* text=auto
+
+# Binary files: never diff or merge as text
+*.xlsx binary
+*.xls  binary
+*.docx binary
+*.pdf  binary
+*.png  binary

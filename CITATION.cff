@@ -1,0 +1,60 @@
+cff-version: 1.2.0
+message: "If you use this code or data, please cite the article listed under preferred-citation."
+type: software
+title: "Code and data for: Requirements to leverage digital product passports for automated environmental impact assessments"
+version: 0.1.0
+# TODO: add after creating the GitHub repository / Zenodo release
+# repository-code: "https://github.com/<user>/<repo>"
+# doi: "10.5281/zenodo.XXXXXXX"
+# license: MIT
+authors: &authors
+  - family-names: Mintjes
+    given-names: Berend Arne
+    email: b.a.mintjes@cml.leidenuniv.nl
+    affiliation: "Institute of Environmental Sciences (CML), Leiden University"
+    # orcid: "https://orcid.org/0000-0000-0000-0000"
+  - family-names: Li
+    given-names: Chen
+    affiliation: "Institute of Environmental Sciences (CML), Leiden University; TNO"
+  - family-names: Hischier
+    given-names: Roland
+    affiliation: "Empa, Technology and Society Laboratory"
+  - family-names: Bouman
+    given-names: Evert A.
+    affiliation: "TNO; NILU"
+  - family-names: Bootoo
+    given-names: Gaylord K.
+    affiliation: "NILU"
+  - family-names: Muller
+    given-names: Stephanie
+    affiliation: "BRGM"
+  - family-names: Cunha
+    given-names: Sónia
+    affiliation: "Institute of Environmental Sciences (CML), Leiden University"
+  - family-names: Moran
+    given-names: Daniel D.
+    affiliation: "NILU; Tohoku University"
+  - family-names: Merciai
+    given-names: Stefano
+    affiliation: "Institute of Environmental Sciences (CML), Leiden University"
+  - family-names: Tukker
+    given-names: Arnold
+    affiliation: "Institute of Environmental Sciences (CML), Leiden University"
+  - family-names: Mogollón
+    given-names: José M.
+    affiliation: "Institute of Environmental Sciences (CML), Leiden University"
+keywords:
+  - digital product passport
+  - life cycle assessment
+  - life cycle inventory
+  - EXIOBASE
+  - Brightway
+preferred-citation:
+  type: article
+  title: "Requirements to leverage digital product passports for automated environmental impact assessments"
+  authors: *authors
+  status: submitted
+  # TODO: update on acceptance
+  # journal: "<journal>"
+  # year: 2027
+  # doi: "<doi>"

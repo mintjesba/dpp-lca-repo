@@ -1,0 +1,26 @@
+# External data that cannot be redistributed (EXIOBASE downloads, ecoinvent, ...)
+data/external/*
+!data/external/README.md
+
+# Regenerated output
+results/*
+!results/.gitkeep
+
+# Office lock and temp files
+~$*
+*.tmp
+
+# Python
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.venv/
+.env
+
+# Editors and OS
+.vscode/
+.idea/
+.spyproject/
+.DS_Store
+Thumbs.db
+desktop.ini
