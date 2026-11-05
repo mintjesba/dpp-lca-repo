@@ -472,7 +472,7 @@ bw.projects.set_current(ei_project_name)
 ei_pv_name = "PV LCI ecoinvent"
 ei_pv_db = bw.Database(ei_pv_name)
 
-ecoinvent_name = "ecoinvent310-cutoff"
+ecoinvent_name = "ecoinvent-3.10-cutoff"
 ei = bw.Database(ecoinvent_name)
 
 # %%% Load ecoinvent conversion
@@ -583,6 +583,7 @@ log_time("ecoinvent score done")
 
 # %% Export results to Excel file
 results = pd.DataFrame(scores, index=["score (kg CO2-eq GWP100)"]).T
+results.to_csv("../results/results.csv")
 # results.to_excel("SI3 - LCA Results.xlsx", sheet_name="LCA Scores")
 
 # %% Monte Carlo analysis was separately performed in Activity Browser using these
