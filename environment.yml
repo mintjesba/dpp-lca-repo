@@ -4,7 +4,7 @@ channels:
   - nodefaults
 dependencies:
   - python=3.11
-  # LCA engine: legacy Brightway 2 API (bw.LCA, Database.copy, ...) as used in the code
+  # LCA engine
   - brightway2=2.4.6          # pulls bw2data 3.6.x, bw2calc 1.8.x, bw2io 0.8.x
   - activity-browser=2.11.2   # GUI used for the Monte Carlo runs (last bw2-based release)
   # data handling
