@@ -5,6 +5,20 @@ import numpy as np
 
 # lca
 import brightway2 as bw
+import bw2calc
+import scipy.linalg
+
+# timing of the main steps
+import time
+
+_t_start = time.perf_counter()
+
+
+def log_time(step):
+    print(f"[{time.perf_counter() - _t_start:6.0f} s] {step}")
+
+
+print("Sparse solver:", bw2calc.lca.spsolve.__module__)  # 'pypardiso...' if installed
 
 # %% files
 # Paths are resolved relative to this script, so it runs from any working directory.
@@ -31,13 +45,13 @@ bw.projects.set_current(project_name)
 
 # %% Instantiate BW databases
 # delete earlier runs
-if "PV LCI" in bw.databases:
-    for db_name in [
-        "PV LCI",
-        "PV LCI CAML",
-        "resource conversion",
-        "resource conversion CAML",
-    ]:
+for db_name in [
+    "PV LCI",
+    "PV LCI CAML",
+    "resource conversion",
+    "resource conversion CAML",
+]:
+    if db_name in bw.databases:
         del bw.databases[db_name]
 
 # For the primary data from PVPS T12
@@ -188,6 +202,7 @@ resconv_db.write(res_conversion_activities)
 pv_db.write(pv_activities)
 
 resconv_db.copy("resource conversion CAML")
+log_time("PV LCI and resource conversion databases written")
 
 # %% Set up conversion database
 # %%% Load conversions from file
@@ -309,6 +324,8 @@ for db, conv in zip([resconv_db, resconv_caml_db], [res_conv, res_conv_caml]):
         for ex in exchanges:
             act.new_exchange(**ex).save()
 
+log_time("resource conversion linked to EXIO3H")
+
 # %% Set up copy of PV LCI linked to CAML mapping
 pvlci = bw.Database("PV LCI")
 
@@ -331,7 +348,6 @@ functional_unit_full = {pv_panel: 1.0}
 
 method_ef31 = ("EF v3.1 EN15804", "climate change", "global warming potential (GWP100)")
 
-full_lca = bw.LCA(functional_unit_full, method_ef31)
 
 # %% Set up BoM LCA with EXIO3H background
 pv_panel_bom = pv_panel.copy()
@@ -361,7 +377,6 @@ bom_info.apply(add_exchange_from_bom_row, axis=1)
 
 # %% set up BoM LCA
 functional_unit_bom = {pv_panel_bom: 1.0}
-bom_lca = bw.LCA(functional_unit_bom, method_ef31)
 
 # %% Set up single-process LCA
 pv_panel_single = pv_panel.copy()
@@ -396,30 +411,56 @@ pv_cell_exchange.save()
 # set up LCA
 functional_unit_single = {pv_panel_single: 1.0}
 
-single_lca = bw.LCA(functional_unit_single, method_ef31)
-
 # %% set up CAML LCA
 pv_panel_caml = pv_lci_caml.search("photovoltaic panel single-Si")[0]
 functional_unit_caml = {pv_panel_caml: 1.0}
 
-caml_lca = bw.LCA(functional_unit_caml, method_ef31)
-
 # %% Set up LCA with IPCC2013
 method_IPCC = ("IPCC 2013", "climate change", "global warming potential (GWP100)")
 
-ipcc_lca = bw.LCA(functional_unit_full, method_IPCC)
-
 # %% Get LCA results
+# One LCA object for all product systems: the EXIO3H matrices are loaded and the
+# technosphere matrix is factorised once, then re-solved for each functional unit.
+log_time("product systems set up")
+
+functional_units = {
+    "full LCA": functional_unit_full,
+    "BoM LCA": functional_unit_bom,
+    "single LCA": functional_unit_single,
+    "CAML LCA": functional_unit_caml,
+}
+all_demands = {k: v for fu in functional_units.values() for k, v in fu.items()}
+
+lca = bw.LCA(all_demands, method_ef31)
+lca.load_lci_data()
+lca.build_demand_array()
+log_time("matrices loaded")
+
+# EXIO3H is an input-output table, so its technosphere matrix is nearly dense. Sparse
+# solvers (scipy/pypardiso) are very slow on it, so it is factorised as a dense matrix
+# (LU decomposition, ~0.5 GB of memory) once. bw2calc uses `lca.solver` for every
+# subsequent (re)calculation.
+_lu = scipy.linalg.lu_factor(
+    lca.technosphere_matrix.toarray(), overwrite_a=True, check_finite=False
+)
+lca.solver = lambda demand: scipy.linalg.lu_solve(_lu, demand, check_finite=False)
+log_time("technosphere factorised")
+
+lca.lci_calculation()
+lca.lcia()
+
 scores = {}
-
-lcas = [full_lca, bom_lca, single_lca, caml_lca, ipcc_lca]
-names = ["full LCA", "BoM LCA", "single LCA", "CAML LCA", "IPCC LCA"]
-
-for lca, name in zip(lcas, names):
-    lca.lci()
-    lca.lcia()
+for name, fu in functional_units.items():
+    lca.redo_lcia(fu)  # reuses the factorisation
     scores[name] = lca.score
     print(f"Score for {name} generated.")
+
+# IPCC 2013: same inventory, only the characterisation factors change
+lca.switch_method(method_IPCC)
+lca.redo_lcia(functional_unit_full)
+scores["IPCC LCA"] = lca.score
+print("Score for IPCC LCA generated.")
+log_time("EXIO3H scores done")
 
 # %% Set up ecoinvent LCA
 # This assumes the "dpp_lca_ecoinvent" project is set up with ecoinvent310-cutoff
@@ -536,6 +577,7 @@ lca_ei.lci()
 lca_ei.lcia()
 
 scores["ecoinvent LCA"] = lca_ei.score
+log_time("ecoinvent score done")
 
 # %% Export results to Excel file
 results = pd.DataFrame(scores, index=["score (kg CO2-eq GWP100)"]).T

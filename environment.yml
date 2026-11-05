@@ -4,12 +4,21 @@ channels:
   - nodefaults
 dependencies:
   - python=3.11
-  # LCA engine
-  - brightway2=2.4.6          # pulls bw2data 3.6.x, bw2calc 1.8.x, bw2io 0.8.x
+  # LCA engine: legacy Brightway 2 API (bw.LCA, Database.copy, ...) as used in the code
+  - brightway2=2.4.6
+  - bw2calc=1.8.2
+  - bw2data=3.6.6
+  - bw2io=0.8.12
   - activity-browser=2.11.2   # GUI used for the Monte Carlo runs (last bw2-based release)
+  # Sparse solver. Keep MKL below 2025: MKL 2025.x has a PARDISO bug that can give
+  # wrong (and slow) solutions with pypardiso's default settings.
+  - pypardiso=0.4.6
+  - mkl=2024.2.2=*_15        # same build as the ab environment (Intel OpenMP threading)
+  - intel-openmp=2024.2.1
   # data handling
-  - numpy<2                   # required by brightway2 2.4.x
-  - pandas>=2.2
+  - numpy=1.26.4              # brightway2 2.4.x needs numpy < 2
+  - scipy=1.15.2
+  - pandas=2.2.3
   - openpyxl                  # read/write the SI Excel files
   # figures and interactive work
   - matplotlib
