@@ -462,6 +462,8 @@ scores["IPCC LCA"] = lca.score
 print("Score for IPCC LCA generated.")
 log_time("EXIO3H scores done")
 
+pd.Series(scores).to_csv("../results/scores.csv")
+
 # %% Set up ecoinvent LCA
 # This assumes the "dpp_lca_ecoinvent" project is set up with ecoinvent310-cutoff
 ei_project_name = "dpp_lca_ecoinvent"
