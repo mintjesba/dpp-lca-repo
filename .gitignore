@@ -2,10 +2,6 @@
 data/external/*
 !data/external/README.md
 
-# Regenerated output
-results/*
-!results/.gitkeep
-
 # Office lock and temp files
 ~$*
 *.tmp
