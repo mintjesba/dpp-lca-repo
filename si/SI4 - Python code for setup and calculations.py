@@ -29,6 +29,9 @@ try:
 except NameError:  # interactive cell execution without __file__
     SI_DIR = Path.cwd()
 
+RESULTS_DIR = SI_DIR.parent / "results"
+RESULTS_DIR.mkdir(exist_ok=True)
+
 conv_table_filename = SI_DIR / "SI2 - conversions used.xlsx"
 dpps_filename = SI_DIR / "SI1 - DPP LCI information.xlsx"
 
@@ -246,6 +249,56 @@ exio3h_name_prod = (
 # create a dict in the form {'C_WOOD': 'wood', ...}
 prod_name_map = exio3h_name_prod.T.to_dict(orient="records")[0]
 
+# %%% Electricity grid mixes (Our World in Data, 2011)
+# EXIOBASE 3 hybrid has no grid-electricity product: so we implement a grid mix based on
+# external data.
+GRID_ELECTRICITY = "electricity, medium voltage, at grid"
+GRID_MIX_YEAR = 2011
+grid_mix_filename = SI_DIR.parent / "data" / "owid_grid_mix.csv"
+
+OWID_TO_EXIO3 = {
+    "Coal": "C_POWC",  # Electricity by coal
+    "Gas": "C_POWG",  # Electricity by gas
+    "Oil": "C_POWP",  # Electricity by petroleum and other oil derivatives
+    "Nuclear": "C_POWN",  # Electricity by nuclear
+    "Hydropower": "C_POWH",  # Electricity by hydro
+    "Wind": "C_POWW",  # Electricity by wind
+    "Solar": "C_POWS",  # Electricity by solar photovoltaic
+    "Bioenergy": "C_POWB",  # Electricity by biomass and waste
+    "Other renewables": "C_POWM",  # Electricity by Geothermal
+}
+OWID_TO_DPP_LOCATION = {"CHN": "CN", "DEU": "DE", "NOR": "NO", "KOR": "KR", "USA": "US"}
+
+owid = pd.read_csv(grid_mix_filename)
+unmapped = set(owid.columns) - {"Entity", "Code", "Year"} - set(OWID_TO_EXIO3)
+if unmapped:
+    raise ValueError(f"OWID sources without an EXIOBASE category: {unmapped}")
+
+owid = owid[owid["Year"] == GRID_MIX_YEAR]
+generation = owid.set_index(owid["Code"].map(OWID_TO_DPP_LOCATION))[list(OWID_TO_EXIO3)]
+generation = generation[generation.index.notna()]
+
+# share of each EXIOBASE electricity product per DPP location (sums to 1)
+grid_shares = generation.div(generation.sum(axis=1), axis=0).rename(
+    columns=OWID_TO_EXIO3
+)
+
+# table for SI2 (sheet 'grid_mix')
+grid_mix_table = grid_shares.T
+grid_mix_table.insert(
+    0, "EXIO3 description", [prod_name_map[p] for p in grid_mix_table.index]
+)
+grid_mix_table.index.name = "EXIO3 code"
+grid_mix_table.to_csv(RESULTS_DIR / "grid_mix.csv")
+
+
+def regions_for(location):
+    """EXIO3H regions for a DPP location, using the 'locations' sheet of SI2."""
+    if location not in country_conv.columns:
+        return [location]
+    return country_conv.index[country_conv.loc[:, location] != 0].to_list()
+
+
 # %% Load databases for resource conversion and CAML resource conversion
 resconv_db_name = "resource conversion"
 resconv_db = bw.Database(resconv_db_name)
@@ -270,6 +323,29 @@ for db, conv in zip([resconv_db, resconv_caml_db], [res_conv, res_conv_caml]):
             or EXIO_code == "#NA()"
             or EXIO_code == 0
         ):
+            continue
+
+        # Grid electricity (manual mapping only): link to the country's 2011 grid mix
+        # of EXIOBASE electricity products instead of a single category
+        if db.name == resconv_db_name and name == GRID_ELECTRICITY:
+            regions = regions_for(location)
+            if location not in grid_shares.index or len(regions) != 1:
+                raise ValueError(
+                    f"No grid mix for location {location}: add it to "
+                    f"{grid_mix_filename.name} and OWID_TO_DPP_LOCATION"
+                )
+            for product, share in grid_shares.loc[location].items():
+                if share == 0:
+                    continue
+                act.new_exchange(
+                    input=("EXIO3H", f"{prod_act_map[product]} - {regions[0]}"),
+                    amount=conv_row["conversion factor"] * share,  # TJ per kWh
+                    type="technosphere",
+                    name=prod_name_map[product],
+                    location=regions[0],
+                    unit="TJ",
+                    **{"uncertainty type": 0},
+                ).save()
             continue
 
         EXIO_unit = conv_row["EXIO3 unit"]
@@ -455,6 +531,29 @@ for name, fu in functional_units.items():
     scores[name] = lca.score
     print(f"Score for {name} generated.")
 
+# Grid-mix check: climate change per kWh of grid electricity for each DPP location,
+# compared with the previous mapping to 'Electricity nec' (C_POWZ)
+grid_check = []
+for conv_act in resconv_db:
+    if conv_act["name"] != GRID_ELECTRICITY:
+        continue
+    location = conv_act["location"]
+    region = regions_for(location)[0]
+    lca.redo_lcia({conv_act.key: 1.0})
+    grid_mix_score = lca.score
+    lca.redo_lcia({("EXIO3H", f"{prod_act_map['C_POWZ']} - {region}"): 3.6e-6})
+    grid_check.append(
+        {
+            "DPP location": location,
+            "grid mix (kg CO2-eq/kWh)": grid_mix_score,
+            "previous mapping, C_POWZ (kg CO2-eq/kWh)": lca.score,
+        }
+    )
+
+grid_check = pd.DataFrame(grid_check).set_index("DPP location")
+print(grid_check)
+grid_check.to_csv(RESULTS_DIR / "grid_mix_check.csv")
+
 # IPCC 2013: same inventory, only the characterisation factors change
 lca.switch_method(method_IPCC)
 lca.redo_lcia(functional_unit_full)
@@ -462,7 +561,7 @@ scores["IPCC LCA"] = lca.score
 print("Score for IPCC LCA generated.")
 log_time("EXIO3H scores done")
 
-pd.Series(scores).to_csv("../results/scores.csv")
+pd.Series(scores).to_csv(RESULTS_DIR / "scores.csv")
 
 # %% Set up ecoinvent LCA
 # This assumes the "dpp_lca_ecoinvent" project is set up with ecoinvent310-cutoff
@@ -583,7 +682,7 @@ log_time("ecoinvent score done")
 
 # %% Export results to Excel file
 results = pd.DataFrame(scores, index=["score (kg CO2-eq GWP100)"]).T
-results.to_csv("../results/results.csv")
+results.to_csv(RESULTS_DIR / "results.csv")
 # results.to_excel("SI3 - LCA Results.xlsx", sheet_name="LCA Scores")
 
 # %% Monte Carlo analysis was separately performed in Activity Browser using these
