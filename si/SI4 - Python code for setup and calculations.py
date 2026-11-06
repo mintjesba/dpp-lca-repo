@@ -422,7 +422,7 @@ exio3h = bw.Database("EXIO3H")
 pv_panel = pvlci.search("photovoltaic panel, single-Si")[0]
 functional_unit_full = {pv_panel: 1.0}
 
-method_ef31 = ("EF v3.1 EN15804", "climate change", "global warming potential (GWP100)")
+method_ef31 = ("EF v3.1", "climate change", "global warming potential (GWP100)")
 
 
 # %% Set up BoM LCA with EXIO3H background
