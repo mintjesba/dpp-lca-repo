@@ -17,6 +17,8 @@ old_cf = {
 }
 new_cf = res_conv.set_index("description")["conversion factor"]
 
+bw.projects.set_current(project_name)  # SI4 ends in the ecoinvent project
+
 lca.switch_method(method_ef31)
 lca.redo_lcia(functional_unit_full)
 lca.fix_dictionaries()

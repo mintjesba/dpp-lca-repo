@@ -426,33 +426,57 @@ method_ef31 = ("EF v3.1", "climate change", "global warming potential (GWP100)")
 
 
 # %% Set up BoM LCA with EXIO3H background
-pv_panel_bom = pv_panel.copy()
-pv_panel_bom["code"] = "photovoltaic panel BoM - CN"
-pv_panel_bom["name"] = "photovoltaic panel BoM - CN"
-pv_panel_bom.save()
+pv_panel_bom_no_location = pv_panel.copy()
+pv_panel_bom_no_location["code"] = "photovoltaic panel BoM - no location info"
+pv_panel_bom_no_location["name"] = "photovoltaic panel BoM - no location info"
+pv_panel_bom_no_location.save()
 
 # delete technosphere and biosphere exchanges
 [
     exc.delete()
-    for exc in pv_panel_bom.exchanges()
+    for exc in pv_panel_bom_no_location.exchanges()
     if exc["type"] in ["technosphere", "biosphere"]
 ]
 
+pv_panel_bom_with_location = pv_panel_bom_no_location.copy()
+pv_panel_bom_with_location["code"] = "photovoltaic panel BoM - with location info"
+pv_panel_bom_with_location["name"] = "photovoltaic panel BoM - with location info"
+pv_panel_bom_with_location.save()
+
 
 # add technosphere exchanges per BoM line
-def add_exchange_from_bom_row(row):
-    input_code = f"{prod_act_map[row['EXIO3 code']]} - {row['location']}"
+def add_exchange_from_bom_row_no_location(row):
+    input_code = f"{prod_act_map[row['EXIO3 code']]} - CN"
     amount = row["mass per m2 panel"]
 
-    pv_panel_bom.new_exchange(
+    pv_panel_bom_no_location.new_exchange(
         input=exio3h.get(input_code), amount=amount, type="technosphere"
     ).save()
 
 
-bom_info.apply(add_exchange_from_bom_row, axis=1)
+def add_exchange_from_bom_row_with_location(row):
+    product = row["EXIO3 code"]
+    regions = regions_for(row["location"])  # e.g. RER -> European EXIO3H regions
+    if len(regions) == 1:
+        shares = pd.Series(1.0, index=regions)
+    else:  # split by production of this product, as for the full inventory
+        output = exio3h_pp_by_prod.xs(product, level=1).groupby(level=0).sum()[regions]
+        shares = output / output.sum()
+    for region, share in shares.items():
+        pv_panel_bom_with_location.new_exchange(
+            input=exio3h.get(f"{prod_act_map[product]} - {region}"),
+            amount=row["mass per m2 panel"] * share,
+            type="technosphere",
+        ).save()
+
+
+bom_info.apply(add_exchange_from_bom_row_no_location, axis=1)
+bom_info.apply(add_exchange_from_bom_row_with_location, axis=1)
+
 
 # %% set up BoM LCA
-functional_unit_bom = {pv_panel_bom: 1.0}
+functional_unit_bom = {pv_panel_bom_no_location: 1.0}
+functional_unit_bom_location = {pv_panel_bom_with_location: 1.0}
 
 # %% Set up single-process LCA
 pv_panel_single = pv_panel.copy()
@@ -502,6 +526,7 @@ log_time("product systems set up")
 functional_units = {
     "full LCA": functional_unit_full,
     "BoM LCA": functional_unit_bom,
+    "BoM LCA (with location)": functional_unit_bom_location,
     "single LCA": functional_unit_single,
     "CAML LCA": functional_unit_caml,
 }
