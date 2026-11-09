@@ -1,0 +1,13 @@
+process,location,infrastructure,units per m2 panel,kg CO2-eq per m2 panel
+"photovoltaic panel, single-Si, at plant",CN,photovoltaic panel factory,4e-06,1.3660092305363178
+"photovoltaic cell, single-Si, at plant",CN,photovoltaic cell factory,3.739968868049645e-07,0.5294852251070727
+"single-Si wafer, photovoltaics, at plant",CN,wafer factory,3.8521678270897664e-06,0.3953253572355129
+"CZ single crystalline silicon, photovoltaics, at plant",CN,silicone plant,5.734984788456274e-12,0.00747114234825741
+"MG-silicon, at plant",CN,silicone plant,3.952892942523719e-12,0.005149556093062687
+"silicon, solar grade, modified Siemens process, at plant",CN,silicone plant,3.4981353621275462e-12,0.004557129305126346
+"MG-silicon, at plant",APAC,silicone plant,1.0492691303047056e-12,0.0013669154014005428
+"silicon, solar grade, modified Siemens process, at plant",APAC,silicone plant,9.285567564003619e-13,0.0012096596523616366
+"MG-silicon, at plant",NO,silicone plant,8.771125188426657e-13,0.0011426416504020241
+"silicon, solar grade, modified Siemens process, at plant",RER,silicone plant,7.762057721627461e-13,0.0010111873055077345
+"MG-silicon, at plant",US,silicone plant,6.012581436542306e-13,0.0007832776101397346
+"silicon, solar grade, modified Siemens process, at plant",US,silicone plant,5.320868550366534e-13,0.0006931660295973526

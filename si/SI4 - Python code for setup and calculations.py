@@ -511,6 +511,7 @@ pv_cell_exchange.save()
 # set up LCA
 functional_unit_single = {pv_panel_single: 1.0}
 
+
 # %% set up CAML LCA
 pv_panel_caml = pv_lci_caml.search("photovoltaic panel single-Si")[0]
 functional_unit_caml = {pv_panel_caml: 1.0}
@@ -556,28 +557,18 @@ for name, fu in functional_units.items():
     scores[name] = lca.score
     print(f"Score for {name} generated.")
 
-# Grid-mix check: climate change per kWh of grid electricity for each DPP location,
-# compared with the previous mapping to 'Electricity nec' (C_POWZ)
-grid_check = []
-for conv_act in resconv_db:
-    if conv_act["name"] != GRID_ELECTRICITY:
-        continue
-    location = conv_act["location"]
-    region = regions_for(location)[0]
-    lca.redo_lcia({conv_act.key: 1.0})
-    grid_mix_score = lca.score
-    lca.redo_lcia({("EXIO3H", f"{prod_act_map['C_POWZ']} - {region}"): 3.6e-6})
-    grid_check.append(
-        {
-            "DPP location": location,
-            "grid mix (kg CO2-eq/kWh)": grid_mix_score,
-            "previous mapping, C_POWZ (kg CO2-eq/kWh)": lca.score,
-        }
-    )
-
-grid_check = pd.DataFrame(grid_check).set_index("DPP location")
-print(grid_check)
-grid_check.to_csv(RESULTS_DIR / "grid_mix_check.csv")
+# %% Foreground only (R3) (no background database included)
+lca.redo_lcia(functional_unit_full)
+lca.fix_dictionaries()
+foreground_cols = {
+    key: j for key, j in lca.activity_dict.items() if key[0] == pv_db_name
+}
+direct = {
+    key[1]: lca.characterized_inventory[:, j].sum()
+    for key, j in foreground_cols.items()
+}
+scores["foreground only"] = sum(direct.values())
+print("Score for foreground only generated.")
 
 # IPCC 2013: same inventory, only the characterisation factors change
 lca.switch_method(method_IPCC)
