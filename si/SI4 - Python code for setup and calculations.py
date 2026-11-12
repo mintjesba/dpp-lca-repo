@@ -51,8 +51,10 @@ bw.projects.set_current(project_name)
 for db_name in [
     "PV LCI",
     "PV LCI CAML",
+    "PV LCI CAML HITL",
     "resource conversion",
     "resource conversion CAML",
+    "resource conversion CAML HITL",
 ]:
     if db_name in bw.databases:
         del bw.databases[db_name]
@@ -205,6 +207,7 @@ resconv_db.write(res_conversion_activities)
 pv_db.write(pv_activities)
 
 resconv_db.copy("resource conversion CAML")
+resconv_db.copy("resource conversion CAML HITL")  # CAML with a reviewer (simulated)
 log_time("PV LCI and resource conversion databases written")
 
 # %% Set up conversion database
@@ -299,6 +302,133 @@ def regions_for(location):
     return country_conv.index[country_conv.loc[:, location] != 0].to_list()
 
 
+# %%% CaML: match the input descriptions to NAICS codes
+# Automated matching step of the 'CAML' scenario, with CaML (Balaji et al., 2023;
+# https://github.com/amazon-science/carbon-assessment-with-ml, Apache 2.0 license)
+# The matching itself runs in its own environment (caml_naics_matching/, see its
+# README) and writes data/caml_top5_naics.csv: CaML's ranked list for each input
+# description, grouped by NAICS code, with the 5 best NAICS codes. Rank 1 is CaML's match.
+CAML_TOP_K = 5
+
+caml_top5 = pd.read_csv(SI_DIR.parent / "data" / "caml_top5_naics.csv")
+caml_top5 = caml_top5.sort_values(["activity_text", "rank"])
+caml_matches = (
+    caml_top5.groupby("activity_text", sort=False)
+    .agg(
+        naics_code=("naics_code", "first"),
+        naics_desc=("naics_desc", "first"),
+        cosine_score=("cosine_score", "first"),
+        top_codes=("naics_code", lambda codes: "; ".join(str(c) for c in codes)),
+    )
+    .rename(columns={"top_codes": f"top {CAML_TOP_K} NAICS codes"})
+    .rename_axis("description")
+    .reset_index()
+)
+
+# Same NAICS codes as in SI2 'CAML to NAICS codes'?
+caml_si2 = pd.read_excel(conv_table_filename, sheet_name="CAML to NAICS codes")
+naics_in_si2 = caml_matches["description"].map(
+    caml_si2.dropna(subset=["description"]).set_index("description")["naics_code"]
+)
+in_si2 = naics_in_si2.notna()
+print(
+    f"CaML: {(caml_matches['naics_code'] == naics_in_si2)[in_si2].sum()} of "
+    f"{in_si2.sum()} NAICS codes as in SI2 ({(~in_si2).sum()} descriptions not in SI2)"
+)
+
+# %%% NAICS codes to EXIOBASE products
+# One EXIOBASE hybrid product per NAICS code, from data/naics_to_exio3h.csv. That table
+# lists, per NAICS code, the hybrid products the NAICS-EXIOBASE concordance links to
+# ('EXIO3 candidates') and the one chosen by hand ('EXIO3 code', with the reason in
+# 'rule'). New NAICS codes are added as drafts with scripts/draft_naics_exio_table.py.
+naics_exio_file = SI_DIR.parent / "data" / "naics_to_exio3h.csv"
+naics_exio = (
+    pd.read_csv(naics_exio_file, dtype={"naics_code": str}).set_index("naics_code")
+    if naics_exio_file.exists()
+    else pd.DataFrame()
+)
+
+top_k_codes = caml_matches[f"top {CAML_TOP_K} NAICS codes"].str.split("; ")
+missing = {c for codes in top_k_codes for c in codes} - set(naics_exio.index)
+if missing:
+    raise ValueError(
+        f"{len(missing)} NAICS codes are not in data/naics_to_exio3h.csv: "
+        "run scripts/draft_naics_exio_table.py and check the new rows"
+    )
+caml_matches["EXIO3 code"] = (
+    caml_matches["naics_code"].astype(str).map(naics_exio["EXIO3 code"])
+)
+
+# The CAML LCA uses SI2 'caml_mapping', whose codes come from column E of
+# 'CAML to NAICS codes': check that it holds the same products
+si2_codes = caml_matches["description"].map(
+    res_conv_caml.set_index("description")["EXIO3 code"]
+)
+outdated = caml_matches["EXIO3 code"].fillna(0) != si2_codes.fillna(0)
+if outdated.any():
+    print(
+        f"{outdated.sum()} inputs have another product in SI2 'caml_mapping': paste the "
+        "'EXIO3 code' column of results/caml_naics_matches.csv into column E of "
+        "'CAML to NAICS codes'"
+    )
+
+# %%% Human in the loop, simulated (CaML top 5)
+# A reviewer who knows the manual mapping chooses from the EXIOBASE products the
+# concordance links to CaML's top-5 NAICS codes. The reviewer takes the manual product
+# if it is among them, excludes the input if the manual mapping excludes it, and keeps
+# CaML's top 1 otherwise. This is an upper bound for a real reviewer.
+manual_codes = caml_matches["description"].map(
+    res_conv.set_index("description")["EXIO3 code"]
+)
+candidates = [
+    {p for code in codes for p in str(naics_exio.at[code, "EXIO3 candidates"]).split("; ")}
+    for codes in top_k_codes
+]
+
+
+def reviewer_choice(description, manual, found):
+    if pd.isnull(manual) or manual in (0, "0", "NA()", "#NA()"):
+        return "excludes input"
+    if description == GRID_ELECTRICITY:  # manual mapping: grid mix of C_POW* products
+        hit = any(p.startswith("C_POW") and p not in ("C_POWT", "C_POWD") for p in found)
+    else:
+        hit = manual in found
+    return "takes manual product" if hit else "keeps CaML top 1"
+
+
+caml_matches["EXIO3 code, manual mapping"] = manual_codes
+caml_matches[f"EXIO3 candidates in top {CAML_TOP_K}"] = [
+    "; ".join(sorted(c)) for c in candidates
+]
+caml_matches["reviewer"] = [
+    reviewer_choice(d, m, c)
+    for d, m, c in zip(caml_matches["description"], manual_codes, candidates)
+]
+caml_matches.to_csv(RESULTS_DIR / "caml_naics_matches.csv", index=False)
+
+compared = caml_matches["reviewer"] != "excludes input"
+automated_ok = caml_matches["EXIO3 code"] == manual_codes
+print(
+    f"Automated (top 1): {(automated_ok & compared).sum()} of {compared.sum()} inputs "
+    "in the same EXIOBASE product as the manual mapping\n"
+    f"Reviewer (top {CAML_TOP_K}): {caml_matches['reviewer'].value_counts().to_dict()}"
+)
+
+# Mapping for the CAML HITL LCA: the manual mapping (including its exclusions) where
+# the reviewer uses it, the CAML mapping otherwise
+reviewed = set(
+    caml_matches.loc[caml_matches["reviewer"] != "keeps CaML top 1", "description"]
+)
+res_conv_caml_hitl = pd.concat(
+    [
+        res_conv[res_conv["description"].isin(reviewed)],
+        res_conv_caml[~res_conv_caml["description"].isin(reviewed)],
+    ],
+    ignore_index=True,
+)
+CAML_HITL_GRID_MIX = GRID_ELECTRICITY in reviewed
+
+
 # %% Load databases for resource conversion and CAML resource conversion
 resconv_db_name = "resource conversion"
 resconv_db = bw.Database(resconv_db_name)
@@ -306,9 +436,15 @@ resconv_db = bw.Database(resconv_db_name)
 resconv_caml_db_name = "resource conversion CAML"
 resconv_caml_db = bw.Database(resconv_caml_db_name)
 
+resconv_caml_hitl_db_name = "resource conversion CAML HITL"
+resconv_caml_hitl_db = bw.Database(resconv_caml_hitl_db_name)
+
 # %%% For each activity in the resource conversion database, link to the converted
 # EXIOBASE activities for both  the manual and the CAML conversion
-for db, conv in zip([resconv_db, resconv_caml_db], [res_conv, res_conv_caml]):
+for db, conv in zip(
+    [resconv_db, resconv_caml_db, resconv_caml_hitl_db],
+    [res_conv, res_conv_caml, res_conv_caml_hitl],
+):
     for act in db:
         name = act["name"]
         location = act["location"]
@@ -325,9 +461,13 @@ for db, conv in zip([resconv_db, resconv_caml_db], [res_conv, res_conv_caml]):
         ):
             continue
 
-        # Grid electricity (manual mapping only): link to the country's 2011 grid mix
-        # of EXIOBASE electricity products instead of a single category
-        if db.name == resconv_db_name and name == GRID_ELECTRICITY:
+        # Grid electricity (manual mapping only, also in the CAML HITL database if the
+        # reviewer takes the manual mapping): link to the country's 2011 grid mix of
+        # EXIOBASE electricity products instead of a single category
+        uses_grid_mix = db.name == resconv_db_name or (
+            db.name == resconv_caml_hitl_db_name and CAML_HITL_GRID_MIX
+        )
+        if uses_grid_mix and name == GRID_ELECTRICITY:
             regions = regions_for(location)
             if location not in grid_shares.index or len(regions) != 1:
                 raise ValueError(
@@ -406,14 +546,18 @@ log_time("resource conversion linked to EXIO3H")
 pvlci = bw.Database("PV LCI")
 
 pv_lci_caml = pvlci.copy("PV LCI CAML")
-res_conv_caml_db = bw.Database("resource conversion CAML")
+pv_lci_caml_hitl = pvlci.copy("PV LCI CAML HITL")
 
-# relink from "resource conversion" to "resource conversion CAML"
-for act in pv_lci_caml:
-    for exc in act.exchanges():
-        if exc.input.key[0] == "resource conversion":
-            exc.input = res_conv_caml_db.get(exc.input.key[1])
-            exc.save()
+# relink from "resource conversion" to "resource conversion CAML" (and CAML HITL)
+for pv_copy, conv_db in [
+    (pv_lci_caml, resconv_caml_db),
+    (pv_lci_caml_hitl, resconv_caml_hitl_db),
+]:
+    for act in pv_copy:
+        for exc in act.exchanges():
+            if exc.input.key[0] == "resource conversion":
+                exc.input = conv_db.get(exc.input.key[1])
+                exc.save()
 
 # %% Set up primary LCA (full LCA, EXIO3H background)
 pvlci = bw.Database("PV LCI")
@@ -516,6 +660,9 @@ functional_unit_single = {pv_panel_single: 1.0}
 pv_panel_caml = pv_lci_caml.search("photovoltaic panel single-Si")[0]
 functional_unit_caml = {pv_panel_caml: 1.0}
 
+pv_panel_caml_hitl = pv_lci_caml_hitl.search("photovoltaic panel single-Si")[0]
+functional_unit_caml_hitl = {pv_panel_caml_hitl: 1.0}
+
 # %% Set up LCA with IPCC2013
 method_IPCC = ("IPCC 2013", "climate change", "global warming potential (GWP100)")
 
@@ -530,6 +677,7 @@ functional_units = {
     "BoM LCA (with location)": functional_unit_bom_location,
     "single LCA": functional_unit_single,
     "CAML LCA": functional_unit_caml,
+    "CAML LCA (reviewer, top 5)": functional_unit_caml_hitl,
 }
 all_demands = {k: v for fu in functional_units.values() for k, v in fu.items()}
 

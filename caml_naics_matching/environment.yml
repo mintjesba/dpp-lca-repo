@@ -1,0 +1,25 @@
+# naics_matching/environment.yml
+name: caml
+channels: [conda-forge, nodefaults]
+dependencies:
+  - python=3.10
+  - pip
+  - pip:
+      # CaML requirements.txt (commit 45b912a), without boto3, s3fs and awscli
+      # (only for S3 access, and their pins conflict)
+      - jupyter==1.0.0
+      - ipywidgets==8.0.4
+      - numpy==1.24.2
+      - pandas==1.5.3
+      - scikit-learn==1.5.0
+      - sentence-transformers==2.2.2
+      - tqdm==4.66.3
+      - nltk==3.10.3
+      - openpyxl==3.1.2
+      - xlrd==2.0.1
+      # not pinned by CaML: versions that work with sentence-transformers 2.2.2
+      - torch==2.2.2
+      - torchvision==0.17.2
+      - transformers==4.48.3
+      - huggingface_hub==0.25.2   # 2.2.2 still uses cached_download, removed in 0.26
+      - -e git+https://github.com/amazon-science/carbon-assessment-with-ml@45b912a90fd79db6cf35a70af17771d827c83592#egg=caml

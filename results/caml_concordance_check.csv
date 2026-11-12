@@ -1,0 +1,78 @@
+description,manual,top1_code,top1_candidates,n_top1,manual_in_top1_candidates,manual_in_top5_candidates
+"1-propanol, at plant",C_CHBI,325199,C_CHBI,1,True,True
+EUR-flat pallet,C_WOOD,321920,C_WOOD; C_WOOW,2,True,True
+"acetic acid, 98% in H2O, at plant",C_CHBI,325199,C_CHBI,1,True,True
+"acrylic binder, 34% in H2O, at plant",C_CHBI,325199,C_CHBI,1,True,True
+"alkylbenzene sulfonate, linear, petrochemical, at plant",C_CHBI,324110,C_REFP,1,False,True
+"aluminium alloy, AlMg3, at plant",C_ALUM,236210,C_CONS; C_CONW,2,False,True
+"ammonia, liquid, at regional storehouse",C_CHBI,325612,C_CHBI,1,True,True
+"argon, liquid, at plant",C_CHBI,325120,C_CHBI; C_BGAS,2,True,True
+"brass, at plant",C_COPP,332323,C_FABM,1,False,True
+"ceramic tiles, at regional storage",C_CRMC,444190,C_TDRT,1,False,False
+"charcoal, at plant",C_WOOD,325998,C_CHBI,1,False,False
+"chromium steel 18/8, at plant",C_STEL,331410,C_PREM; C_PREW; C_LZTP; C_LZTW; C_COPP; C_COPW; C_ONFM; C_ONFW,8,False,True
+"copper, at regional storage",C_COPP,331410,C_PREM; C_PREW; C_LZTP; C_LZTW; C_COPP; C_COPW; C_ONFM; C_ONFW,8,True,True
+"corrugated board, mixed fibre, single wall, at plant",C_PAPE,322211,C_PAPE,1,True,True
+"diesel, burned in building machine, average",C_REFP,333618,C_ELMA; C_MACH,2,False,True
+"diode, unspecified, at plant",C_ELMA,423690,C_TDWH,1,False,True
+"dipropylene glycol monomethyl ether, at plant",C_CHBI,325199,C_CHBI,1,True,True
+"disposal, municipal solid waste, 22.9% water, to municipal incineration",C_WASO,562213,C_INCF; C_INCP; C_INCL; C_INCM; C_INCT; C_INCW; C_BIOF; C_BIOP; C_BIOS; C_COMF; C_COMW; C_LANF; C_LANP; C_LANL; C_LANI; C_LANT; C_LANW,17,False,True
+"disposal, plastics, mixture, 15.3% water, to municipal incineration",C_INCL,326199,C_RUBP,1,False,True
+"disposal, polyvinylfluoride, 0.2% water, to municipal incineration",C_INCL,562213,C_INCF; C_INCP; C_INCL; C_INCM; C_INCT; C_INCW; C_BIOF; C_BIOP; C_BIOS; C_COMF; C_COMW; C_LANF; C_LANP; C_LANL; C_LANI; C_LANT; C_LANW,17,True,True
+"disposal, slag from MG silicon production, 0% water, to inert material landfill",C_LANI,562212,C_INCF; C_INCP; C_INCL; C_INCM; C_INCT; C_INCW; C_BIOF; C_BIOP; C_BIOS; C_COMF; C_COMW; C_LANF; C_LANP; C_LANL; C_LANI; C_LANT; C_LANW,17,True,True
+"disposal, solvents mixture, 16.5% water, to hazardous waste incineration",C_INCO,562213,C_INCF; C_INCP; C_INCL; C_INCM; C_INCT; C_INCW; C_BIOF; C_BIOP; C_BIOS; C_COMF; C_COMW; C_LANF; C_LANP; C_LANL; C_LANI; C_LANT; C_LANW,17,False,True
+"disposal, used mineral oil, 10% water, to hazardous waste incineration",C_INCO,562211,C_INCF; C_INCP; C_INCL; C_INCM; C_INCT; C_INCW; C_BIOF; C_BIOP; C_BIOS; C_COMF; C_COMW; C_LANF; C_LANP; C_LANL; C_LANI; C_LANT; C_LANW,17,False,True
+"disposal, waste, Si waferprod., inorg, 9.4% water, to residual material landfill",C_LANI,562212,C_INCF; C_INCP; C_INCL; C_INCM; C_INCT; C_INCW; C_BIOF; C_BIOP; C_BIOS; C_COMF; C_COMW; C_LANF; C_LANP; C_LANL; C_LANI; C_LANT; C_LANW,17,True,True
+"disposal, waste, silicon wafer production, 0% water, to underground deposit",C_LANI,213112,C_COIL; C_GASS; C_OGPL,3,False,True
+"electricity, at cogen 1MWe lean burn, allocation exergy",C_POWG,237130,C_CONS,1,False,False
+"electricity, hydropower, at run-of-river power plant",C_POWH,237990,C_CONS,1,False,False
+"electricity, medium voltage, at grid",C_POWZ,238210,C_CONS,1,False,False
+"ethylvinylacetate, foil, at plant",C_PLAS,325194,C_CLPT; C_CHBI,2,False,False
+"flat glass, uncoated, at plant",C_GLAS,327211,C_GLAS; C_GLAW,2,True,True
+"glass fibre reinforced plastic, polyamide, injection moulding, at plant",C_PLAS,333249,C_MACH; C_ELMA,2,False,True
+"graphite, at plant",C_ONMM,212399,C_STON; C_CLPT; C_CHMF,3,False,True
+"hard coal coke, at plant",C_CLPT,211130,C_GASS; C_OGPL,2,False,True
+"heat, at cogen 1MWe lean burn, allocation exergy",C_HWAT,332410,C_FABM,1,False,True
+"hydrochloric acid, 30% in H2O, at plant",C_CHBI,325180,C_CHBI,1,True,True
+"hydrogen fluoride, at plant",C_CHBI,325180,C_CHBI,1,True,True
+"hydrogen, liquid, at plant",C_CHBI,325120,C_CHBI; C_BGAS,2,True,True
+"isopropanol, at plant",C_CHBI,325199,C_CHBI,1,True,True
+"lead, at regional storage",C_LZTP,423510,C_TDWH,1,False,True
+"lime, hydrated, packed, at plant",C_CMNT,327410,C_CMNT,1,True,True
+"metallization paste, back side, aluminium, at plant",C_ALUM,331492,C_PREM; C_PREW; C_LZTP; C_LZTW; C_ONFM; C_ONFW,6,False,True
+"metallization paste, back side, at plant",C_PREM,331492,C_PREM; C_PREW; C_LZTP; C_LZTW; C_ONFM; C_ONFW,6,True,True
+"metallization paste, front side, at plant",C_PREM,331492,C_PREM; C_PREW; C_LZTP; C_LZTW; C_ONFM; C_ONFW,6,True,True
+"natural gas, burned in industrial furnace low-NOx >100kW",C_HWAT,211130,C_GASS; C_OGPL,2,False,False
+"nitric acid, 50% in H2O, at plant",C_CHBI,325311,C_NFER,1,False,True
+"nitrogen, liquid, at plant",C_CHBI,325120,C_CHBI; C_BGAS,2,True,True
+"oxygen, liquid, at plant",C_CHBI,221310,C_WATR,1,False,True
+"petroleum coke, at refinery",C_CLPT,324110,C_REFP,1,False,False
+"phosphoryl chloride, at plant",C_CHBI,325312,C_PFER,1,False,True
+photovoltaic cell factory,,334413,C_ELMA; C_RATV,2,,
+photovoltaic panel factory,,334413,C_ELMA; C_RATV,2,,
+"polyethylene terephthalate, granulate, amorphous, at plant",C_PLAS,324110,C_REFP,1,False,True
+"polyethylene, HDPE, granulate, at plant",C_PLAS,325110,C_CHBI,1,False,True
+"polyvinylfluoride film, at plant",C_CHBI,326113,C_RUBP,1,False,True
+"potassium hydroxide, at regional storage",C_CHBI,212391,C_CHMF,1,False,True
+"refrigerant R134a, at plant",C_CHBI,333415,C_MACH,1,False,False
+"silane, at plant",C_ONMM,212322,C_SDCL,1,False,True
+"silica sand, at plant",C_ONMM,212322,C_SDCL,1,False,False
+silicone plant,,325199,C_CHBI,1,,
+"silicone product, at plant",C_ONMM,325199,C_CHBI,1,False,True
+"soap, at plant",C_CHBI,332999,C_FABM,1,False,True
+"sodium hydroxide, 50% in H2O, production mix, at plant",C_CHBI,325199,C_CHBI,1,True,True
+"solar glass, low-iron, at regional storage",C_GLAS,444190,C_TDRT,1,False,True
+"tap water, water balance according to MoeK 2013, at user",C_WATR,238220,C_CONS,1,False,True
+"tempering, flat glass",,327211,C_GLAS; C_GLAW,2,,
+"tin, at regional storage",C_LZTP,325180,C_CHBI,1,False,True
+"transport, freight, lorry, fleet average",C_TLND,481112,C_TAIR,1,False,True
+"transport, freight, rail",C_TRAI,482111,C_TRAI,1,True,True
+"transport, transoceanic freight ship",C_TWAS,483111,C_TWAS,1,True,True
+"treatment, PV cell production effluent, to wastewater treatment, class 3",C_WASO,221310,C_WATR,1,False,True
+"treatment, sewage, from residence, to wastewater treatment, class 2",C_WASO,221320,C_WASF; C_WASO,2,True,True
+"treatment, sewage, to wastewater treatment, class 2",C_WASO,221320,C_WASF; C_WASO,2,True,True
+wafer factory,,321219,C_WOOD; C_WOOW,2,,
+"water, deionised, water balance according to MoeK 2013, at plant",C_WATR,221310,C_WATR,1,True,True
+"wire drawing, copper",,331420,C_COPP; C_COPW,2,,
+"wire drawing, steel",,331222,C_STEL; C_STEW; C_FABM,3,,
+"wood chips, production mix, wet, measured as dry mass, at forest road & at sawmill",C_WOOD,321113,C_WOOD; C_WOOW,2,True,True
