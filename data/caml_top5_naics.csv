@@ -1,9 +1,9 @@
 activity_text,rank,naics_code,naics_desc,naics_title,bea_code,cosine_score,votes
-"1-propanol, at plant",1,325199,Propylcarbinol manufacturing,All Other Basic Organic Chemical Manufacturing,325190,0.60481721,11
-"1-propanol, at plant",2,325194,"Naphthol, alpha and beta, manufacturing","Cyclic Crude, Intermediate, and Gum and Wood Chemical Manufacturing",325190,0.54237026,5
-"1-propanol, at plant",3,312140,"Ethyl alcohol, potable, manufacturing",Distilleries,312140,0.53138411,1
-"1-propanol, at plant",4,324110,"Propylene (i.e., propene) made in petroleum refineries",Petroleum Refineries,324110,0.50423801,1
-"1-propanol, at plant",5,325193,"Ethyl alcohol, nonpotable, manufacturing",Ethyl Alcohol Manufacturing,325190,0.48844305,1
+"1-propanol, at plant",1,325199,Propylcarbinol manufacturing,All Other Basic Organic Chemical Manufacturing,325190,0.60481703,11
+"1-propanol, at plant",2,325194,"Naphthol, alpha and beta, manufacturing","Cyclic Crude, Intermediate, and Gum and Wood Chemical Manufacturing",325190,0.5423705,5
+"1-propanol, at plant",3,312140,"Ethyl alcohol, potable, manufacturing",Distilleries,312140,0.53138399,1
+"1-propanol, at plant",4,324110,"Propylene (i.e., propene) made in petroleum refineries",Petroleum Refineries,324110,0.50423789,1
+"1-propanol, at plant",5,325193,"Ethyl alcohol, nonpotable, manufacturing",Ethyl Alcohol Manufacturing,325190,0.48844329,1
 "acetic acid, 98% in H2O, at plant",1,325199,Acetic acid manufacturing,All Other Basic Organic Chemical Manufacturing,325190,0.63888681,9
 "acetic acid, 98% in H2O, at plant",2,325194,"Acetone, natural, manufacturing","Cyclic Crude, Intermediate, and Gum and Wood Chemical Manufacturing",325190,0.5852524,4
 "acetic acid, 98% in H2O, at plant",3,325411,Acetylsalicylic acid manufacturing,Medicinal and Botanical Manufacturing,325411,0.5417155,3
@@ -34,21 +34,21 @@ activity_text,rank,naics_code,naics_desc,naics_title,bea_code,cosine_score,votes
 "argon, liquid, at plant",3,211130,"Gas, residue, extraction",Natural Gas Extraction,211000,0.48033842,7
 "argon, liquid, at plant",4,325612,"Ammonia, household-type, manufacturing",Polish and Other Sanitation Good Manufacturing,325610,0.47125512,1
 "argon, liquid, at plant",5,236210,Acid plant construction,Industrial Building Construction,"233230,230301",0.46925548,1
-"brass, at plant",1,332323,"Brasswork, ornamental, manufacturing",Ornamental and Architectural Metal Work Manufacturing,332320,0.74206984,2
-"brass, at plant",2,331420,"Brass products, rolling, drawing, or extruding, made from purchased copper or in integrated secondary smelting and rolling, drawing or extruding plants","Copper Rolling, Drawing, Extruding, and Alloying",331420,0.69541764,3
-"brass, at plant",3,331529,Brass foundries (except die-casting),Other Nonferrous Metal Foundries (except Die-Casting),331520,0.67882246,1
-"brass, at plant",4,332999,"Leaf, metal, manufacturing",All Other Miscellaneous Fabricated Metal Product Manufacturing,332999,0.61328137,2
-"brass, at plant",5,331523,"Brass die-castings, unfinished, manufacturing",Nonferrous Metal Die-Casting Foundries,331520,0.60976219,1
+"brass, at plant",1,332323,"Brasswork, ornamental, manufacturing",Ornamental and Architectural Metal Work Manufacturing,332320,0.74207002,2
+"brass, at plant",2,331420,"Brass products, rolling, drawing, or extruding, made from purchased copper or in integrated secondary smelting and rolling, drawing or extruding plants","Copper Rolling, Drawing, Extruding, and Alloying",331420,0.69541758,3
+"brass, at plant",3,331529,Brass foundries (except die-casting),Other Nonferrous Metal Foundries (except Die-Casting),331520,0.67882234,1
+"brass, at plant",4,332999,"Leaf, metal, manufacturing",All Other Miscellaneous Fabricated Metal Product Manufacturing,332999,0.61328149,2
+"brass, at plant",5,331523,"Brass die-castings, unfinished, manufacturing",Nonferrous Metal Die-Casting Foundries,331520,0.60976195,1
 "ceramic tiles, at regional storage",1,444190,Ceramic tile stores,Other Building Material Dealers,444000,0.78046626,2
 "ceramic tiles, at regional storage",2,327120,"Ceramic tiles, floor and wall, manufacturing",Clay Building Material and Refractories Manufacturing,327100,0.7238487,10
 "ceramic tiles, at regional storage",3,423320,Ceramic construction materials (except refractory and ceramic roofing tile) merchant wholesalers,"Brick, Stone, and Related Construction Material Merchant Wholesalers",423A00,0.65013683,3
 "ceramic tiles, at regional storage",4,423220,Ceramic wall (except structural) and floor tile merchant wholesalers,Home Furnishing Merchant Wholesalers,423A00,0.61473268,1
 "ceramic tiles, at regional storage",5,423330,Ceramic and clay roofing materials merchant wholesalers,"Roofing, Siding, and Insulation Material Merchant Wholesalers",423A00,0.60039949,1
-"charcoal, at plant",1,325998,"Charcoal, activated, manufacturing",All Other Miscellaneous Chemical Product and Preparation Manufacturing,3259A0,0.76562905,2
-"charcoal, at plant",2,325194,Charcoal (except activated) manufacturing,"Cyclic Crude, Intermediate, and Gum and Wood Chemical Manufacturing",325190,0.66247541,2
+"charcoal, at plant",1,325998,"Charcoal, activated, manufacturing",All Other Miscellaneous Chemical Product and Preparation Manufacturing,3259A0,0.76562935,2
+"charcoal, at plant",2,325194,Charcoal (except activated) manufacturing,"Cyclic Crude, Intermediate, and Gum and Wood Chemical Manufacturing",325190,0.66247535,2
 "charcoal, at plant",3,424990,Charcoal merchant wholesalers,Other Miscellaneous Nondurable Goods Merchant Wholesalers,424A00,0.55654955,1
-"charcoal, at plant",4,212111,"Cleaning plants, bituminous coal",Bituminous Coal and Lignite Surface Mining,212100,0.53419316,4
-"charcoal, at plant",5,212113,"Cleaning plants, anthracite coal",Anthracite Mining,212100,0.53287596,4
+"charcoal, at plant",4,212111,"Cleaning plants, bituminous coal",Bituminous Coal and Lignite Surface Mining,212100,0.5341931,4
+"charcoal, at plant",5,212113,"Cleaning plants, anthracite coal",Anthracite Mining,212100,0.53287607,4
 "chromium steel 18/8, at plant",1,331410,"Chromium refining, primary",Nonferrous Metal (except Aluminum) Smelting and Refining,331410,0.68439925,3
 "chromium steel 18/8, at plant",2,325180,"Chromium compounds, not specified elsewhere by process, manufacturing",Other Basic Inorganic Chemical Manufacturing,325180,0.66584074,3
 "chromium steel 18/8, at plant",3,331110,Steel manufacturing,Iron and Steel Mills and Ferroalloy Manufacturing,331110,0.63270938,4
@@ -139,11 +139,11 @@ activity_text,rank,naics_code,naics_desc,naics_title,bea_code,cosine_score,votes
 "ethylvinylacetate, foil, at plant",3,312140,"Ethyl alcohol, potable, manufacturing",Distilleries,312140,0.52370667,1
 "ethylvinylacetate, foil, at plant",4,325193,"Ethyl alcohol, nonpotable, manufacturing",Ethyl Alcohol Manufacturing,325190,0.4971585,1
 "ethylvinylacetate, foil, at plant",5,212391,Sodium compounds prepared at beneficiating plants,"Potash, Soda, and Borate Mineral Mining",2123A0,0.47601044,1
-EUR-flat pallet,1,321920,"Pallet parts, wood, manufacturing",Wood Container and Pallet Manufacturing,3219A0,0.5792715,5
-EUR-flat pallet,2,332999,"Pallet parts, metal, manufacturing",All Other Miscellaneous Fabricated Metal Product Manufacturing,332999,0.57803822,2
-EUR-flat pallet,3,322211,"Pallets, corrugated and solid fiber, made from purchased paper or paperboard",Corrugated and Solid Fiber Box Manufacturing,322210,0.57272136,3
-EUR-flat pallet,4,333924,Pallet movers manufacturing,"Industrial Truck, Tractor, Trailer, and Stacker Machinery Manufacturing",333920,0.55686253,1
-EUR-flat pallet,5,423830,Pallets and skids merchant wholesalers,Industrial Machinery and Equipment Merchant Wholesalers,423800,0.52718842,1
+EUR-flat pallet,1,321920,"Pallet parts, wood, manufacturing",Wood Container and Pallet Manufacturing,3219A0,0.57927155,5
+EUR-flat pallet,2,332999,"Pallet parts, metal, manufacturing",All Other Miscellaneous Fabricated Metal Product Manufacturing,332999,0.57803828,2
+EUR-flat pallet,3,322211,"Pallets, corrugated and solid fiber, made from purchased paper or paperboard",Corrugated and Solid Fiber Box Manufacturing,322210,0.5727216,3
+EUR-flat pallet,4,333924,Pallet movers manufacturing,"Industrial Truck, Tractor, Trailer, and Stacker Machinery Manufacturing",333920,0.55686247,1
+EUR-flat pallet,5,423830,Pallets and skids merchant wholesalers,Industrial Machinery and Equipment Merchant Wholesalers,423800,0.52718866,1
 "flat glass, uncoated, at plant",1,327211,Laminated glass made in glass making plants,Flat Glass Manufacturing,327200,0.66476226,4
 "flat glass, uncoated, at plant",2,327212,"Glass fiber, unsheathed, made in glass making plants",Other Pressed and Blown Glass and Glassware Manufacturing,327200,0.62812489,13
 "flat glass, uncoated, at plant",3,327215,Industrial glassware made from purchased glass,Glass Product Manufacturing Made of Purchased Glass,327200,0.59732211,3
@@ -152,11 +152,11 @@ EUR-flat pallet,5,423830,Pallets and skids merchant wholesalers,Industrial Machi
 "glass fibre reinforced plastic, polyamide, injection moulding, at plant",3,326112,"Flexible packaging, plastics film, manufacturing",Plastics Packaging Film and Sheet (including Laminated) Manufacturing,326110,0.64531088,1
 "glass fibre reinforced plastic, polyamide, injection moulding, at plant",4,333511,"Molds for forming materials (e.g., glass, plastics, rubber) manufacturing",Industrial Mold Manufacturing,333511,0.64032173,2
 "glass fibre reinforced plastic, polyamide, injection moulding, at plant",5,325211,"Resins, plastics (except custom compounding purchased resins), manufacturing",Plastics Material and Resin Manufacturing,325211,0.63230354,4
-"graphite, at plant",1,212399,Graphite mining and/or beneficiating,All Other Nonmetallic Mineral Mining,2123A0,0.71164715,1
-"graphite, at plant",2,335991,Graphite specialties for electrical use manufacturing,Carbon and Graphite Product Manufacturing,335991,0.68012214,8
-"graphite, at plant",3,327992,"Graphite, natural (e.g., ground, pulverized, refined, blended), manufacturing",Ground or Treated Mineral and Earth Manufacturing,327992,0.66820985,3
+"graphite, at plant",1,212399,Graphite mining and/or beneficiating,All Other Nonmetallic Mineral Mining,2123A0,0.71164691,1
+"graphite, at plant",2,335991,Graphite specialties for electrical use manufacturing,Carbon and Graphite Product Manufacturing,335991,0.68012202,8
+"graphite, at plant",3,327992,"Graphite, natural (e.g., ground, pulverized, refined, blended), manufacturing",Ground or Treated Mineral and Earth Manufacturing,327992,0.66820991,3
 "graphite, at plant",4,331511,"Castings, compacted graphite iron, unfinished, manufacturing",Iron Foundries,331510,0.57696068,1
-"graphite, at plant",5,332999,"Leaf, metal, manufacturing",All Other Miscellaneous Fabricated Metal Product Manufacturing,332999,0.56191307,1
+"graphite, at plant",5,332999,"Leaf, metal, manufacturing",All Other Miscellaneous Fabricated Metal Product Manufacturing,332999,0.56191319,1
 "hard coal coke, at plant",1,211130,Coal pyrolysis,Natural Gas Extraction,211000,0.65887982,3
 "hard coal coke, at plant",2,324199,"Coke oven products (e.g., coke, gases, tars) made in coke oven establishments",All Other Petroleum and Coal Products Manufacturing,324190,0.629327,1
 "hard coal coke, at plant",3,324110,Petroleum coke made in petroleum refineries,Petroleum Refineries,324110,0.60707259,1
@@ -182,11 +182,11 @@ EUR-flat pallet,5,423830,Pallets and skids merchant wholesalers,Industrial Machi
 "hydrogen, liquid, at plant",3,221310,"Filtration plant, water",Water Supply and Irrigation Systems,221300,0.48943862,4
 "hydrogen, liquid, at plant",4,325180,Hydrochloric acid manufacturing,Other Basic Inorganic Chemical Manufacturing,325180,0.46911824,5
 "hydrogen, liquid, at plant",5,236210,Acid plant construction,Industrial Building Construction,"233230,230301",0.46758074,1
-"isopropanol, at plant",1,325199,Isopropyl alcohol manufacturing,All Other Basic Organic Chemical Manufacturing,325190,0.63992727,5
-"isopropanol, at plant",2,325194,Isocyanates manufacturing,"Cyclic Crude, Intermediate, and Gum and Wood Chemical Manufacturing",325190,0.58732659,6
-"isopropanol, at plant",3,325110,Isoprene made from refined petroleum or liquid hydrocarbons,Petrochemical Manufacturing,325110,0.56819642,3
-"isopropanol, at plant",4,325411,"Medicinal chemicals, uncompounded, manufacturing",Medicinal and Botanical Manufacturing,325411,0.55590272,2
-"isopropanol, at plant",5,312140,"Ethyl alcohol, potable, manufacturing",Distilleries,312140,0.55538666,1
+"isopropanol, at plant",1,325199,Isopropyl alcohol manufacturing,All Other Basic Organic Chemical Manufacturing,325190,0.63992745,5
+"isopropanol, at plant",2,325194,Isocyanates manufacturing,"Cyclic Crude, Intermediate, and Gum and Wood Chemical Manufacturing",325190,0.58732653,6
+"isopropanol, at plant",3,325110,Isoprene made from refined petroleum or liquid hydrocarbons,Petrochemical Manufacturing,325110,0.56819665,3
+"isopropanol, at plant",4,325411,"Medicinal chemicals, uncompounded, manufacturing",Medicinal and Botanical Manufacturing,325411,0.5559026,2
+"isopropanol, at plant",5,312140,"Ethyl alcohol, potable, manufacturing",Distilleries,312140,0.55538672,1
 "lead, at regional storage",1,423510,"Storage tanks, metal, merchant wholesalers",Metal Service Centers and Other Metal Merchant Wholesalers,423A00,0.61694849,3
 "lead, at regional storage",2,331410,"Lead smelting and refining, primary",Nonferrous Metal (except Aluminum) Smelting and Refining,331410,0.58991885,1
 "lead, at regional storage",3,493120,"Warehousing, refrigerated",Refrigerated Warehousing and Storage,493000,0.58804375,4
@@ -242,16 +242,6 @@ EUR-flat pallet,5,423830,Pallets and skids merchant wholesalers,Industrial Machi
 "phosphoryl chloride, at plant",3,325314,Phosphatic fertilizers made by mixing purchased materials,Fertilizer (Mixing Only) Manufacturing,325310,0.47361857,1
 "phosphoryl chloride, at plant",4,325130,Phosphotungstic acid lakes and toners manufacturing,Synthetic Dye and Pigment Manufacturing,325130,0.45764682,2
 "phosphoryl chloride, at plant",5,325199,Chloral manufacturing,All Other Basic Organic Chemical Manufacturing,325190,0.45265776,3
-photovoltaic cell factory,1,334413,Photovoltaic cells manufacturing,Semiconductor and Related Device Manufacturing,334413,0.84729755,7
-photovoltaic cell factory,2,335999,Photovoltaic panels made from purchased cells,All Other Miscellaneous Electrical Equipment and Component Manufacturing,335999,0.69810843,4
-photovoltaic cell factory,3,238210,Installation of photovoltaic panels,Electrical Contractors and Other Wiring Installation Contractors,"233210,2332D0,230302,233230,2332A0,233262,233240,233411,233412,230301,2334A0",0.59020042,1
-photovoltaic cell factory,4,333414,Solar heating systems manufacturing,Heating Equipment (except Warm Air Furnaces) Manufacturing,333414,0.5594703,2
-photovoltaic cell factory,5,423690,Solar cells merchant wholesalers,Other Electronic Parts and Equipment Merchant Wholesalers,423600,0.54503697,1
-photovoltaic panel factory,1,334413,Photovoltaic cells manufacturing,Semiconductor and Related Device Manufacturing,334413,0.75966346,3
-photovoltaic panel factory,2,238210,Installation of photovoltaic panels,Electrical Contractors and Other Wiring Installation Contractors,"233210,2332D0,230302,233230,2332A0,233262,233240,233411,233412,230301,2334A0",0.73246956,2
-photovoltaic panel factory,3,335999,Photovoltaic panels made from purchased cells,All Other Miscellaneous Electrical Equipment and Component Manufacturing,335999,0.6732145,1
-photovoltaic panel factory,4,333414,Solar heating systems manufacturing,Heating Equipment (except Warm Air Furnaces) Manufacturing,333414,0.65024781,2
-photovoltaic panel factory,5,335313,"Panels, generator control and metering, manufacturing",Switchgear and Switchboard Apparatus Manufacturing,335313,0.64143181,4
 "polyethylene terephthalate, granulate, amorphous, at plant",1,324110,"Propylene (i.e., propene) made in petroleum refineries",Petroleum Refineries,324110,0.59778321,3
 "polyethylene terephthalate, granulate, amorphous, at plant",2,325211,Polyethylene terephthalate (PET) resins manufacturing,Plastics Material and Resin Manufacturing,325211,0.59154618,3
 "polyethylene terephthalate, granulate, amorphous, at plant",3,325220,Polyethylene terephthalate (PET) fibers and filaments manufacturing,Artificial and Synthetic Fibers and Filaments Manufacturing,3252A0,0.57744968,1
@@ -276,31 +266,26 @@ photovoltaic panel factory,5,335313,"Panels, generator control and metering, man
 "refrigerant R134a, at plant",3,493120,Refrigerated warehousing,Refrigerated Warehousing and Storage,493000,0.55005002,4
 "refrigerant R134a, at plant",4,334512,"Refrigeration controls, residential and commercial-type, manufacturing","Automatic Environmental Control Manufacturing for Residential, Commercial, and Appliance Use",334512,0.54942948,1
 "refrigerant R134a, at plant",5,811310,Commercial refrigeration equipment repair and maintenance services,Commercial and Industrial Machinery and Equipment (except Automotive and Electronic) Repair and Maintenance,811300,0.53827983,3
-"silane, at plant",1,212322,Silica mining and/or beneficiating,Industrial Sand Mining,2123A0,0.60273844,1
-"silane, at plant",2,325180,"Silica, amorphous, manufacturing",Other Basic Inorganic Chemical Manufacturing,325180,0.56547153,6
-"silane, at plant",3,327390,"Sills, concrete, manufacturing",Other Concrete Product Manufacturing,327390,0.54197168,2
-"silane, at plant",4,212325,Sillimanite mining and/or beneficiating,Clay and Ceramic and Refractory Minerals Mining,2123A0,0.51915407,1
-"silane, at plant",5,236220,Silo construction,Commercial and Institutional Building Construction,"230301,233262,233210,2332A0",0.51104271,1
-"silica sand, at plant",1,212322,Silica sand quarrying and/or beneficiating,Industrial Sand Mining,2123A0,0.66898811,7
-"silica sand, at plant",2,325180,"Silica, amorphous, manufacturing",Other Basic Inorganic Chemical Manufacturing,325180,0.61611396,3
+"silane, at plant",1,212322,Silica mining and/or beneficiating,Industrial Sand Mining,2123A0,0.60273862,1
+"silane, at plant",2,325180,"Silica, amorphous, manufacturing",Other Basic Inorganic Chemical Manufacturing,325180,0.56547189,6
+"silane, at plant",3,327390,"Sills, concrete, manufacturing",Other Concrete Product Manufacturing,327390,0.54197192,2
+"silane, at plant",4,212325,Sillimanite mining and/or beneficiating,Clay and Ceramic and Refractory Minerals Mining,2123A0,0.51915419,1
+"silane, at plant",5,236220,Silo construction,Commercial and Institutional Building Construction,"230301,233262,233210,2332A0",0.51104259,1
+"silica sand, at plant",1,212322,Silica sand quarrying and/or beneficiating,Industrial Sand Mining,2123A0,0.66898829,7
+"silica sand, at plant",2,325180,"Silica, amorphous, manufacturing",Other Basic Inorganic Chemical Manufacturing,325180,0.61611402,3
 "silica sand, at plant",3,212113,"Preparation plants, anthracite",Anthracite Mining,212100,0.50907201,1
-"silica sand, at plant",4,212325,Sillimanite mining and/or beneficiating,Clay and Ceramic and Refractory Minerals Mining,2123A0,0.5089649,1
-"silica sand, at plant",5,212321,"Sand, construction grade, quarrying and/or beneficiating",Construction Sand and Gravel Mining,2123A0,0.50731814,2
-silicone plant,1,325199,Silicone (except resins) manufacturing,All Other Basic Organic Chemical Manufacturing,325190,0.58227468,1
-silicone plant,2,325211,Silicone resins manufacturing,Plastics Material and Resin Manufacturing,325211,0.56431597,1
-silicone plant,3,111422,Ornamental plant growing,Floriculture Production,111400,0.55224419,2
-silicone plant,4,327212,"Photomask blanks, glass, made in glass making plants",Other Pressed and Blown Glass and Glassware Manufacturing,327200,0.52467918,12
-silicone plant,5,325212,Silicone rubber manufacturing,Synthetic Rubber Manufacturing,3252A0,0.52461582,1
+"silica sand, at plant",4,212325,Sillimanite mining and/or beneficiating,Clay and Ceramic and Refractory Minerals Mining,2123A0,0.50896496,1
+"silica sand, at plant",5,212321,"Sand, construction grade, quarrying and/or beneficiating",Construction Sand and Gravel Mining,2123A0,0.50731826,2
 "silicone product, at plant",1,325199,Silicone (except resins) manufacturing,All Other Basic Organic Chemical Manufacturing,325190,0.70869291,1
 "silicone product, at plant",2,325211,Silicone resins manufacturing,Plastics Material and Resin Manufacturing,325211,0.69478315,1
 "silicone product, at plant",3,325212,Silicone rubber manufacturing,Synthetic Rubber Manufacturing,3252A0,0.63324976,2
 "silicone product, at plant",4,325180,"Silica, amorphous, manufacturing",Other Basic Inorganic Chemical Manufacturing,325180,0.61792421,3
 "silicone product, at plant",5,327992,"Silicon, ultra high purity, manufacturing",Ground or Treated Mineral and Earth Manufacturing,327992,0.58626825,1
-"soap, at plant",1,332999,"Scouring pads, soap impregnated, manufacturing",All Other Miscellaneous Fabricated Metal Product Manufacturing,332999,0.6033144,2
-"soap, at plant",2,325611,Waterless hand soaps manufacturing,Soap and Other Detergent Manufacturing,325610,0.57397389,7
-"soap, at plant",3,325199,Naphthenic acid soaps manufacturing,All Other Basic Organic Chemical Manufacturing,325190,0.53544068,2
-"soap, at plant",4,221310,Water treatment plants,Water Supply and Irrigation Systems,221300,0.5232048,1
-"soap, at plant",5,424210,Toilet soaps merchant wholesalers,Drugs and Druggists' Sundries Merchant Wholesalers,424200,0.51468927,1
+"soap, at plant",1,332999,"Scouring pads, soap impregnated, manufacturing",All Other Miscellaneous Fabricated Metal Product Manufacturing,332999,0.60331428,2
+"soap, at plant",2,325611,Waterless hand soaps manufacturing,Soap and Other Detergent Manufacturing,325610,0.57397413,7
+"soap, at plant",3,325199,Naphthenic acid soaps manufacturing,All Other Basic Organic Chemical Manufacturing,325190,0.53544092,2
+"soap, at plant",4,221310,Water treatment plants,Water Supply and Irrigation Systems,221300,0.52320468,1
+"soap, at plant",5,424210,Toilet soaps merchant wholesalers,Drugs and Druggists' Sundries Merchant Wholesalers,424200,0.51468921,1
 "sodium hydroxide, 50% in H2O, production mix, at plant",1,325199,Sodium acetate manufacturing,All Other Basic Organic Chemical Manufacturing,325190,0.60497403,3
 "sodium hydroxide, 50% in H2O, production mix, at plant",2,212391,Sodium compounds prepared at beneficiating plants,"Potash, Soda, and Borate Mineral Mining",2123A0,0.59116101,3
 "sodium hydroxide, 50% in H2O, production mix, at plant",3,325180,Sodium hypochlorite manufacturing,Other Basic Inorganic Chemical Manufacturing,325180,0.58202815,11
@@ -316,11 +301,6 @@ silicone plant,5,325212,Silicone rubber manufacturing,Synthetic Rubber Manufactu
 "tap water, water balance according to MoeK 2013, at user",3,334514,"Watermeters, consumption registering, manufacturing",Totalizing Fluid Meter and Counting Device Manufacturing,334514,0.5028106,1
 "tap water, water balance according to MoeK 2013, at user",4,237110,Water sampling station installation,Water and Sewer Line and Related Structures Construction,233240,0.46450225,1
 "tap water, water balance according to MoeK 2013, at user",5,445299,"Water stores, bottled",All Other Specialty Food Stores,445000,0.4375931,1
-"tempering, flat glass",1,327211,"Flat glass (e.g., float, plate) manufacturing",Flat Glass Manufacturing,327200,0.67294657,1
-"tempering, flat glass",2,327215,Tempered glass made from purchased glass,Glass Product Manufacturing Made of Purchased Glass,327200,0.62935597,11
-"tempering, flat glass",3,423390,Flat glass merchant wholesalers,Other Construction Material Merchant Wholesalers,423A00,0.56550062,1
-"tempering, flat glass",4,327212,"Technical glassware and glass products, pressed or blown, made in glass making plants",Other Pressed and Blown Glass and Glassware Manufacturing,327200,0.54917485,5
-"tempering, flat glass",5,811122,"Glass installation, automotive repair",Automotive Glass Replacement Shops,811100,0.53509843,1
 "tin, at regional storage",1,325180,"Tin compounds, not specified elsewhere by process, manufacturing",Other Basic Inorganic Chemical Manufacturing,325180,0.6822505,3
 "tin, at regional storage",2,423510,Tin and tin alloy primary forms merchant wholesalers,Metal Service Centers and Other Metal Merchant Wholesalers,423A00,0.66462547,4
 "tin, at regional storage",3,331410,"Tin refining, primary",Nonferrous Metal (except Aluminum) Smelting and Refining,331410,0.6583457,1
@@ -356,24 +336,16 @@ silicone plant,5,325212,Silicone rubber manufacturing,Synthetic Rubber Manufactu
 "treatment, sewage, to wastewater treatment, class 2",3,333318,Sewage treatment equipment manufacturing,Other Commercial and Service Industry Machinery Manufacturing,333318,0.63498664,3
 "treatment, sewage, to wastewater treatment, class 2",4,423850,"Water treatment equipment, municipal, merchant wholesalers",Service Establishment Equipment and Supplies Merchant Wholesalers,423800,0.60428226,1
 "treatment, sewage, to wastewater treatment, class 2",5,325311,"Fertilizers, of sewage origin, manufacturing",Nitrogenous Fertilizer Manufacturing,325310,0.60241997,1
-wafer factory,1,321219,Waferboard manufacturing,Reconstituted Wood Product Manufacturing,321200,0.80544174,1
-wafer factory,2,334413,Wafers (semiconductor devices) manufacturing,Semiconductor and Related Device Manufacturing,334413,0.77619767,5
-wafer factory,3,333242,"Wafer processing equipment, semiconductor, manufacturing",Semiconductor Machinery Manufacturing,333242,0.73023653,1
-wafer factory,4,311821,Graham wafers manufacturing,Cookie and Cracker Manufacturing,3118A0,0.70239389,1
-wafer factory,5,311812,Communion wafer manufacturing,Commercial Bakeries,311810,0.69734883,1
 "water, deionised, water balance according to MoeK 2013, at plant",1,221310,Water filtration plant operation,Water Supply and Irrigation Systems,221300,0.61148596,8
 "water, deionised, water balance according to MoeK 2013, at plant",2,238220,Water meter installation,"Plumbing, Heating, and Air-Conditioning Contractors","230302,2334A0,2332A0,233230,233210,230301,2332D0,233411,233412,233240,233262",0.51002336,2
 "water, deionised, water balance according to MoeK 2013, at plant",3,334514,"Watermeters, consumption registering, manufacturing",Totalizing Fluid Meter and Counting Device Manufacturing,334514,0.5010711,1
 "water, deionised, water balance according to MoeK 2013, at plant",4,237110,Water treatment plant construction,Water and Sewer Line and Related Structures Construction,233240,0.49663436,4
 "water, deionised, water balance according to MoeK 2013, at plant",5,334513,"Hydrometers, industrial process-type, manufacturing","Instruments and Related Products Manufacturing for Measuring, Displaying, and Controlling Industrial Process Variables",334513,0.47805649,3
-"wire drawing, copper",1,331420,Aircraft and automotive wire or cable made from purchased copper in wire drawing plants,"Copper Rolling, Drawing, Extruding, and Alloying",331420,0.7019248,12
-"wire drawing, copper",2,331491,"Wire, nonferrous metals (except aluminum, copper), made from purchased nonferrous metals (except aluminum, copper) in wire drawing plants","Nonferrous Metal (except Copper and Aluminum) Rolling, Drawing, and Extruding",331490,0.68815947,5
-"wire drawing, copper",3,331318,"Wire, bare, made in aluminum wire drawing plants","Other Aluminum Rolling, Drawing, and Extruding",33131B,0.66899794,3
-"wire drawing, steel",1,331222,"Wire products, iron or steel, made in wire drawing plants",Steel Wire Drawing,331200,0.78085965,12
+"wire drawing, steel",1,331222,"Wire products, iron or steel, made in wire drawing plants",Steel Wire Drawing,331200,0.78085947,12
 "wire drawing, steel",2,331318,"Wire, armored, made in aluminum wire drawing plants","Other Aluminum Rolling, Drawing, and Extruding",33131B,0.72183633,3
-"wire drawing, steel",3,333519,Wire drawing and fabricating machinery and equipment (except dies) manufacturing,Rolling Mill and Other Metalworking Machinery Manufacturing,33351B,0.71060514,1
-"wire drawing, steel",4,331491,"Wire, nonferrous metals (except aluminum, copper), made from purchased nonferrous metals (except aluminum, copper) in wire drawing plants","Nonferrous Metal (except Copper and Aluminum) Rolling, Drawing, and Extruding",331490,0.7071594,2
-"wire drawing, steel",5,331420,"Wire, copper (e.g., armored, bare, insulated), made in integrated secondary smelting and wire drawing plants","Copper Rolling, Drawing, Extruding, and Alloying",331420,0.69153005,1
+"wire drawing, steel",3,333519,Wire drawing and fabricating machinery and equipment (except dies) manufacturing,Rolling Mill and Other Metalworking Machinery Manufacturing,33351B,0.71060526,1
+"wire drawing, steel",4,331491,"Wire, nonferrous metals (except aluminum, copper), made from purchased nonferrous metals (except aluminum, copper) in wire drawing plants","Nonferrous Metal (except Copper and Aluminum) Rolling, Drawing, and Extruding",331490,0.70715934,2
+"wire drawing, steel",5,331420,"Wire, copper (e.g., armored, bare, insulated), made in integrated secondary smelting and wire drawing plants","Copper Rolling, Drawing, Extruding, and Alloying",331420,0.69152993,1
 "wood chips, production mix, wet, measured as dry mass, at forest road & at sawmill",1,321113,Wood chips made in sawmills,Sawmills,321100,0.6730265,3
 "wood chips, production mix, wet, measured as dry mass, at forest road & at sawmill",2,321999,"Grain measures, wood, turned and shaped, manufacturing",All Other Miscellaneous Wood Product Manufacturing,3219A0,0.59487122,6
 "wood chips, production mix, wet, measured as dry mass, at forest road & at sawmill",3,113210,"Gathering of forest products (e.g., barks, gums, needles, seeds)",Forest Nurseries and Gathering of Forest Products,113000,0.54374993,1

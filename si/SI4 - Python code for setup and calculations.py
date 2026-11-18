@@ -207,13 +207,18 @@ resconv_db.write(res_conversion_activities)
 pv_db.write(pv_activities)
 
 resconv_db.copy("resource conversion CAML")
-resconv_db.copy("resource conversion CAML HITL")  # CAML with a reviewer (simulated)
+resconv_db.copy("resource conversion CAML HITL")
+
 log_time("PV LCI and resource conversion databases written")
 
 # %% Set up conversion database
 # %%% Load conversions from file
-res_conv = pd.read_excel(conv_table_filename, sheet_name="resources")
-res_conv_caml = pd.read_excel(conv_table_filename, sheet_name="caml_mapping")
+res_conv = pd.read_excel(conv_table_filename, sheet_name="manual")
+res_conv_caml = pd.read_excel(conv_table_filename, sheet_name="caml_automated")
+res_conv_caml_hitl = pd.read_excel(
+    conv_table_filename, sheet_name="caml_human_in_the_loop"
+)
+
 bs_conv = pd.read_excel(conv_table_filename, sheet_name="emissions")
 country_conv = pd.read_excel(conv_table_filename, sheet_name="locations", index_col=0)
 
@@ -302,133 +307,6 @@ def regions_for(location):
     return country_conv.index[country_conv.loc[:, location] != 0].to_list()
 
 
-# %%% CaML: match the input descriptions to NAICS codes
-# Automated matching step of the 'CAML' scenario, with CaML (Balaji et al., 2023;
-# https://github.com/amazon-science/carbon-assessment-with-ml, Apache 2.0 license)
-# The matching itself runs in its own environment (caml_naics_matching/, see its
-# README) and writes data/caml_top5_naics.csv: CaML's ranked list for each input
-# description, grouped by NAICS code, with the 5 best NAICS codes. Rank 1 is CaML's match.
-CAML_TOP_K = 5
-
-caml_top5 = pd.read_csv(SI_DIR.parent / "data" / "caml_top5_naics.csv")
-caml_top5 = caml_top5.sort_values(["activity_text", "rank"])
-caml_matches = (
-    caml_top5.groupby("activity_text", sort=False)
-    .agg(
-        naics_code=("naics_code", "first"),
-        naics_desc=("naics_desc", "first"),
-        cosine_score=("cosine_score", "first"),
-        top_codes=("naics_code", lambda codes: "; ".join(str(c) for c in codes)),
-    )
-    .rename(columns={"top_codes": f"top {CAML_TOP_K} NAICS codes"})
-    .rename_axis("description")
-    .reset_index()
-)
-
-# Same NAICS codes as in SI2 'CAML to NAICS codes'?
-caml_si2 = pd.read_excel(conv_table_filename, sheet_name="CAML to NAICS codes")
-naics_in_si2 = caml_matches["description"].map(
-    caml_si2.dropna(subset=["description"]).set_index("description")["naics_code"]
-)
-in_si2 = naics_in_si2.notna()
-print(
-    f"CaML: {(caml_matches['naics_code'] == naics_in_si2)[in_si2].sum()} of "
-    f"{in_si2.sum()} NAICS codes as in SI2 ({(~in_si2).sum()} descriptions not in SI2)"
-)
-
-# %%% NAICS codes to EXIOBASE products
-# One EXIOBASE hybrid product per NAICS code, from data/naics_to_exio3h.csv. That table
-# lists, per NAICS code, the hybrid products the NAICS-EXIOBASE concordance links to
-# ('EXIO3 candidates') and the one chosen by hand ('EXIO3 code', with the reason in
-# 'rule'). New NAICS codes are added as drafts with scripts/draft_naics_exio_table.py.
-naics_exio_file = SI_DIR.parent / "data" / "naics_to_exio3h.csv"
-naics_exio = (
-    pd.read_csv(naics_exio_file, dtype={"naics_code": str}).set_index("naics_code")
-    if naics_exio_file.exists()
-    else pd.DataFrame()
-)
-
-top_k_codes = caml_matches[f"top {CAML_TOP_K} NAICS codes"].str.split("; ")
-missing = {c for codes in top_k_codes for c in codes} - set(naics_exio.index)
-if missing:
-    raise ValueError(
-        f"{len(missing)} NAICS codes are not in data/naics_to_exio3h.csv: "
-        "run scripts/draft_naics_exio_table.py and check the new rows"
-    )
-caml_matches["EXIO3 code"] = (
-    caml_matches["naics_code"].astype(str).map(naics_exio["EXIO3 code"])
-)
-
-# The CAML LCA uses SI2 'caml_mapping', whose codes come from column E of
-# 'CAML to NAICS codes': check that it holds the same products
-si2_codes = caml_matches["description"].map(
-    res_conv_caml.set_index("description")["EXIO3 code"]
-)
-outdated = caml_matches["EXIO3 code"].fillna(0) != si2_codes.fillna(0)
-if outdated.any():
-    print(
-        f"{outdated.sum()} inputs have another product in SI2 'caml_mapping': paste the "
-        "'EXIO3 code' column of results/caml_naics_matches.csv into column E of "
-        "'CAML to NAICS codes'"
-    )
-
-# %%% Human in the loop, simulated (CaML top 5)
-# A reviewer who knows the manual mapping chooses from the EXIOBASE products the
-# concordance links to CaML's top-5 NAICS codes. The reviewer takes the manual product
-# if it is among them, excludes the input if the manual mapping excludes it, and keeps
-# CaML's top 1 otherwise. This is an upper bound for a real reviewer.
-manual_codes = caml_matches["description"].map(
-    res_conv.set_index("description")["EXIO3 code"]
-)
-candidates = [
-    {p for code in codes for p in str(naics_exio.at[code, "EXIO3 candidates"]).split("; ")}
-    for codes in top_k_codes
-]
-
-
-def reviewer_choice(description, manual, found):
-    if pd.isnull(manual) or manual in (0, "0", "NA()", "#NA()"):
-        return "excludes input"
-    if description == GRID_ELECTRICITY:  # manual mapping: grid mix of C_POW* products
-        hit = any(p.startswith("C_POW") and p not in ("C_POWT", "C_POWD") for p in found)
-    else:
-        hit = manual in found
-    return "takes manual product" if hit else "keeps CaML top 1"
-
-
-caml_matches["EXIO3 code, manual mapping"] = manual_codes
-caml_matches[f"EXIO3 candidates in top {CAML_TOP_K}"] = [
-    "; ".join(sorted(c)) for c in candidates
-]
-caml_matches["reviewer"] = [
-    reviewer_choice(d, m, c)
-    for d, m, c in zip(caml_matches["description"], manual_codes, candidates)
-]
-caml_matches.to_csv(RESULTS_DIR / "caml_naics_matches.csv", index=False)
-
-compared = caml_matches["reviewer"] != "excludes input"
-automated_ok = caml_matches["EXIO3 code"] == manual_codes
-print(
-    f"Automated (top 1): {(automated_ok & compared).sum()} of {compared.sum()} inputs "
-    "in the same EXIOBASE product as the manual mapping\n"
-    f"Reviewer (top {CAML_TOP_K}): {caml_matches['reviewer'].value_counts().to_dict()}"
-)
-
-# Mapping for the CAML HITL LCA: the manual mapping (including its exclusions) where
-# the reviewer uses it, the CAML mapping otherwise
-reviewed = set(
-    caml_matches.loc[caml_matches["reviewer"] != "keeps CaML top 1", "description"]
-)
-res_conv_caml_hitl = pd.concat(
-    [
-        res_conv[res_conv["description"].isin(reviewed)],
-        res_conv_caml[~res_conv_caml["description"].isin(reviewed)],
-    ],
-    ignore_index=True,
-)
-CAML_HITL_GRID_MIX = GRID_ELECTRICITY in reviewed
-
-
 # %% Load databases for resource conversion and CAML resource conversion
 resconv_db_name = "resource conversion"
 resconv_db = bw.Database(resconv_db_name)
@@ -451,23 +329,13 @@ for db, conv in zip(
 
         conv_row = conv[conv["description"] == name].copy().iloc[0]
 
-        EXIO_code = conv_row["EXIO3 code"]
-
-        if (
-            pd.isnull(EXIO_code)
-            or EXIO_code == "NA()"
-            or EXIO_code == "#NA()"
-            or EXIO_code == 0
-        ):
-            continue
-
-        # Grid electricity (manual mapping only, also in the CAML HITL database if the
-        # reviewer takes the manual mapping): link to the country's 2011 grid mix of
-        # EXIOBASE electricity products instead of a single category
-        uses_grid_mix = db.name == resconv_db_name or (
-            db.name == resconv_caml_hitl_db_name and CAML_HITL_GRID_MIX
-        )
-        if uses_grid_mix and name == GRID_ELECTRICITY:
+        # Grid electricity: in all cases (manual mapping, CAML automated and CAML with
+        # reviewer) linked to the country's 2011 grid mix of EXIOBASE electricity
+        # products, with the conversion factor of the manual mapping (TJ per kWh)
+        if name == GRID_ELECTRICITY:
+            tj_per_kwh = res_conv.loc[
+                res_conv["description"] == GRID_ELECTRICITY, "conversion factor"
+            ].iloc[0]
             regions = regions_for(location)
             if location not in grid_shares.index or len(regions) != 1:
                 raise ValueError(
@@ -479,13 +347,25 @@ for db, conv in zip(
                     continue
                 act.new_exchange(
                     input=("EXIO3H", f"{prod_act_map[product]} - {regions[0]}"),
-                    amount=conv_row["conversion factor"] * share,  # TJ per kWh
+                    amount=tj_per_kwh * share,
                     type="technosphere",
                     name=prod_name_map[product],
                     location=regions[0],
                     unit="TJ",
                     **{"uncertainty type": 0},
                 ).save()
+            continue
+
+        EXIO_code = conv_row["EXIO3 code"]
+        conv_factor = conv_row["conversion factor"]
+
+        if (
+            pd.isnull(EXIO_code)
+            or EXIO_code == "NA()"
+            or EXIO_code == "#NA()"
+            or EXIO_code == 0
+            or pd.isna(conv_factor)
+        ):
             continue
 
         EXIO_unit = conv_row["EXIO3 unit"]
@@ -548,7 +428,10 @@ pvlci = bw.Database("PV LCI")
 pv_lci_caml = pvlci.copy("PV LCI CAML")
 pv_lci_caml_hitl = pvlci.copy("PV LCI CAML HITL")
 
-# relink from "resource conversion" to "resource conversion CAML" (and CAML HITL)
+
+res_conv_caml_db = bw.Database("resource conversion CAML")
+
+# relink from "resource conversion" to "resource conversion CAML"
 for pv_copy, conv_db in [
     (pv_lci_caml, resconv_caml_db),
     (pv_lci_caml_hitl, resconv_caml_hitl_db),
@@ -558,7 +441,6 @@ for pv_copy, conv_db in [
             if exc.input.key[0] == "resource conversion":
                 exc.input = conv_db.get(exc.input.key[1])
                 exc.save()
-
 # %% Set up primary LCA (full LCA, EXIO3H background)
 pvlci = bw.Database("PV LCI")
 exio3h = bw.Database("EXIO3H")
@@ -657,6 +539,7 @@ functional_unit_single = {pv_panel_single: 1.0}
 
 
 # %% set up CAML LCA
+# %% set up CAML LCAs
 pv_panel_caml = pv_lci_caml.search("photovoltaic panel single-Si")[0]
 functional_unit_caml = {pv_panel_caml: 1.0}
 
@@ -686,10 +569,7 @@ lca.load_lci_data()
 lca.build_demand_array()
 log_time("matrices loaded")
 
-# EXIO3H is an input-output table, so its technosphere matrix is nearly dense. Sparse
-# solvers (scipy/pypardiso) are very slow on it, so it is factorised as a dense matrix
-# (LU decomposition, ~0.5 GB of memory) once. bw2calc uses `lca.solver` for every
-# subsequent (re)calculation.
+# this speeds up the calculations
 _lu = scipy.linalg.lu_factor(
     lca.technosphere_matrix.toarray(), overwrite_a=True, check_finite=False
 )

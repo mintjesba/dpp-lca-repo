@@ -10,6 +10,8 @@ from sentence_transformers import SentenceTransformer, util
 from caml.eio import naics
 
 # folder for files
+from pathlib import Path
+
 REPO = Path(__file__).resolve().parents[1]
 
 # %% Read descriptions from SI file
@@ -22,7 +24,10 @@ to_remove = [
     "photovoltaic cell, single-Si, at plant",  # CAML analysis only uses "full" case
     "photovoltaic cell factory",  # capital goods are excluded
     "photovoltaic panel factory",  # capital goods are excluded
+    "silicone plant",  # capital goods are excluded
     "wafer factory",  # capital goods are excluded
+    "wire drawing, copper",  # excluded as service in original analysis
+    "tempering, flat glass",  # excluded as service in original analysis
 ]
 for descr in to_remove:
     descriptions.remove(descr)
