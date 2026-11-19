@@ -78,6 +78,8 @@ with pd.ExcelFile(dpps_filename) as dpp_file:
 pv_activities = {}
 res_conversion_activities = {}
 
+res_conv = pd.read_excel(conv_table_filename, sheet_name="manual")
+
 for dppnr, dpp in enumerate(dpps.copy().values()):
     dpp = dpp.copy()[dpp["value"] != 0]
 
@@ -146,21 +148,33 @@ for dppnr, dpp in enumerate(dpps.copy().values()):
     exchanges_df["type"] = dpp.apply(row_to_type, axis=1)
 
     # set uncertainty
-    is_product_or_component = dpp["type"].isin(["product", "component"])
+    BASIC_UNCERTAINTY = 1.05
+
+    is_product = dpp["type"].isin(["product"])
 
     exchanges_df["uncertainty type"] = 2
 
     # products and components get no uncertainty
-    exchanges_df.loc[is_product_or_component, "uncertainty type"] = 0
+    exchanges_df.loc[is_product, "uncertainty type"] = 0
 
     # negative amounts get no uncertainty (as this breaks the MC analysis)
     exchanges_df.loc[exchanges_df["amount"] < 0, "uncertainty type"] = 0
 
     # SD95 to uncertainty of lognormal
-    exchanges_df.loc[~is_product_or_component, "loc"] = np.log(dpp["value"])
-    exchanges_df.loc[~is_product_or_component, "scale"] = np.log(
-        dpp["SD95"] ** (1 / 1.96)
+    exchanges_df.loc[~is_product, "loc"] = np.log(dpp["value"])
+    exchanges_df.loc[~is_product, "scale"] = np.log(BASIC_UNCERTAINTY) / 2
+
+    link_scale = (
+        dpp["description"].map(res_conv.set_index("description")["scale"]).fillna(0)
     )
+    is_resource = dpp["type"] == "resource"
+    exchanges_df.loc[is_resource, "scale"] = np.sqrt(
+        exchanges_df.loc[is_resource, "scale"] ** 2 + link_scale[is_resource] ** 2
+    )
+
+    # copy source uncertainty
+    exchanges_df["source SD95"] = dpp["SD95"]
+    exchanges_df.loc[is_resource, "link scale"] = link_scale[is_resource]
 
     exchanges = list(exchanges_df.T.to_dict().values())
     exchanges = [{k: v for k, v in x.items() if v == v} for x in exchanges]
@@ -398,8 +412,6 @@ for db, conv in zip(
 
         exchanges["amount"] = get_distribution_factor(conv_row, exchanges["location"])
 
-        exchanges["uncertainty type"] = 0
-
         exchanges_df = (
             exchanges.to_frame()
             .T.explode(["location", "amount"])
@@ -512,7 +524,7 @@ pv_panel_single.save()
 # %%
 # get PV cell input and change to EXIO category
 pv_cell_exchange = [ex for ex in pv_panel_single.exchanges()][1]
-pv_cell_exchange.input = exio3h.get("A_ELMA - CN")
+pv_cell_exchange.input = exio3h.get("A_RATV - CN")
 pv_cell_exchange["name"] = "single LCI photovoltaic panel"
 
 # get conversion factor from conversions file
@@ -528,9 +540,11 @@ pv_cell_exchange["unit"] = "tonnes"
 pv_cell_exchange["uncertainty type"] = 2  # lognormal, as this is no longer a component
 
 amount = pv_cell_exchange["amount"]
-sd95 = 1.243456651  # copied from source file
+pv_cell_tr_scale = res_conv.loc[
+    res_conv["description"] == "photovoltaic cell, single-Si, at plant", "scale"
+].iloc[0]
 pv_cell_exchange["loc"] = np.log(amount)
-pv_cell_exchange["scale"] = np.log(sd95 ** (1 / 1.96))
+pv_cell_exchange["scale"] = np.sqrt((np.log(1.05) / 2) ** 2 + pv_cell_tr_scale**2)
 
 pv_cell_exchange.save()
 
@@ -694,19 +708,6 @@ for dppnr, dpp in enumerate(dpps.copy().values()):
 
     exchanges_df["type"] = dpp.apply(row_to_type, axis=1)
 
-    # set uncertainty
-    is_product_or_component = dpp["type"].isin(["product", "component"])
-
-    exchanges_df["uncertainty type"] = 2
-
-    # products and components get no uncertainty
-    exchanges_df.loc[is_product_or_component, "uncertainty type"] = 0
-
-    # negative amounts get no uncertainty (as this breaks the MC analysis)
-    exchanges_df.loc[exchanges_df["amount"] < 0, "uncertainty type"] = 0
-    exchanges_df.loc[~is_product_or_component, "loc"] = np.log(dpp["value"])
-    exchanges_df.loc[~is_product_or_component, "scale"] = np.log(dpp["SD95"]) / 1.96
-
     exchanges = list(exchanges_df.T.to_dict().values())
     exchanges = [{k: v for k, v in x.items() if v == v} for x in exchanges]
 
@@ -729,6 +730,59 @@ results = pd.DataFrame(scores, index=["score (kg CO2-eq GWP100)"]).T
 results.to_csv(RESULTS_DIR / "results.csv")
 # results.to_excel("SI3 - LCA Results.xlsx", sheet_name="LCA Scores")
 
-# %% Monte Carlo analysis was separately performed in Activity Browser using these
-# databases. Random seed 2113, randomisation for technosphere and biosphere, not for
-# CFs and  parameters.
+# %% Monte Carlo Analysis
+bw.projects.set_current(project_name)  # SI4 switches to the ecoinvent project
+
+# setup DB with source uncertainties
+src_db_name = "PV LCI source SD95"
+if src_db_name in bw.databases:
+    del bw.databases[src_db_name]
+pv_src = bw.Database(pv_db_name).copy(src_db_name)  # internal links follow the copy
+
+for act in pv_src:
+    for exc in act.exchanges():
+        source_sd95 = exc.get("source SD95")
+        if exc.get("uncertainty type") != 2 or source_sd95 is None:
+            continue  # products and negative amounts stay fixed
+        exc["scale"] = np.sqrt(
+            (np.log(source_sd95) / 2) ** 2 + exc.get("link scale", 0) ** 2
+        )
+        exc.save()
+
+# run MC analysis
+from bw2calc.monte_carlo import DirectSolvingMonteCarloLCA
+from tqdm.auto import tqdm
+
+MC_RUNS = 10
+MC_SEED = 2113
+mc_cases = {
+    "full LCA": functional_unit_full,
+    "single LCA": functional_unit_single,
+    "full LCA (source SD95)": {pv_src.get(pv_panel["code"]): 1.0},
+}
+
+bw.projects.set_current(project_name)  # SI4 switches to the ecoinvent project
+
+mc_runs = {}
+for case, functional_unit in mc_cases.items():
+    mc = DirectSolvingMonteCarloLCA(functional_unit, method_ef31, seed=MC_SEED)
+    mc.load_data()
+    mc_runs[case] = [next(mc) for _ in tqdm(range(MC_RUNS), desc=case)]
+
+mc_runs = pd.DataFrame(mc_runs).rename_axis("run")
+mc_summary = pd.DataFrame(
+    {
+        # "deterministic": {case: scores[case] for case in mc_cases},
+        "mean": mc_runs.mean(),
+        "median": mc_runs.median(),
+        "standard deviation": mc_runs.std(),
+        "2.5th percentile": mc_runs.quantile(0.025),
+        "97.5th percentile": mc_runs.quantile(0.975),
+    }
+)
+print(mc_summary)
+mc_runs.to_csv(RESULTS_DIR / "monte_carlo_runs.csv")
+mc_summary.to_csv(RESULTS_DIR / "monte_carlo_summary.csv")
+log_time(f"Monte Carlo ({MC_RUNS} runs per case) done")
+
+# %%
