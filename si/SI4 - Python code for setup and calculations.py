@@ -753,7 +753,7 @@ for act in pv_src:
 from bw2calc.monte_carlo import DirectSolvingMonteCarloLCA
 from tqdm.auto import tqdm
 
-MC_RUNS = 10
+MC_RUNS = 100
 MC_SEED = 2113
 mc_cases = {
     "full LCA": functional_unit_full,
