@@ -727,8 +727,102 @@ log_time("ecoinvent score done")
 
 # %% Export results to Excel file
 results = pd.DataFrame(scores, index=["score (kg CO2-eq GWP100)"]).T
+
+full_LCA_score = results.iloc[0, 0]
+results["ratio to baseline"] = results.iloc[:, 0] / full_LCA_score
+results["% difference"] = -(1 - results["ratio to baseline"]) * 100
+
 results.to_csv(RESULTS_DIR / "results.csv")
-# results.to_excel("SI3 - LCA Results.xlsx", sheet_name="LCA Scores")
+
+# %% Contribution analysis
+bw.projects.set_current(project_name)  # SI4 ends in the ecoinvent project
+lca.switch_method(method_ef31)
+lca.fix_dictionaries()
+
+lca.redo_lcia(functional_unit_full)
+
+A = lca.technosphere_matrix.tocsc()
+# direct impact per unit of each activity, and life-cycle impact per unit of each product
+h = np.asarray((lca.characterization_matrix @ lca.biosphere_matrix).sum(axis=0)).ravel()
+s = scipy.linalg.lu_solve(_lu, h, trans=1, check_finite=False)
+
+rev_act, rev_prod, _ = lca.reverse_dict()
+foreground_keys = [key for key in lca.activity_dict if key[0].startswith(pv_db_name)]
+foreground_cols = [lca.activity_dict[key] for key in foreground_keys]
+foreground_rows = {lca.product_dict[key] for key in foreground_keys}
+
+
+def contributions(case, functional_unit):
+    lca.redo_lcia(functional_unit)
+    x = lca.supply_array
+    rows = []
+    for col in foreground_cols:
+        if x[col] == 0:
+            continue
+        activity = bw.get_activity(rev_act[col])
+        rows.append(
+            {
+                "case": case,
+                "foreground activity": activity["name"],
+                "input": "direct emissions",
+                "input database": "",
+                "input location": "",
+                "kg CO2-eq per m2 panel": h[col] * x[col],
+            }
+        )
+        column = A[:, col]
+        for row, amount in zip(column.indices, column.data):
+            if row in foreground_rows:
+                continue  # production exchange or component: counted at its own level
+            supplier = bw.get_activity(rev_prod[row])
+            rows.append(
+                {
+                    "case": case,
+                    "foreground activity": activity["name"],
+                    "input": supplier["name"],
+                    "input database": supplier["database"],
+                    "input location": supplier.get("location", ""),
+                    "kg CO2-eq per m2 panel": -amount * x[col] * s[row],
+                }
+            )
+    df = pd.DataFrame(rows)
+    total = df["kg CO2-eq per m2 panel"].sum()
+    assert np.isclose(total, lca.score, rtol=1e-6), (case, total, lca.score)
+    return df
+
+
+contribution_table = pd.concat(
+    [contributions(case, fu) for case, fu in functional_units.items()],
+    ignore_index=True,
+)
+contribution_table["share of score"] = contribution_table[
+    "kg CO2-eq per m2 panel"
+] / contribution_table.groupby("case")["kg CO2-eq per m2 panel"].transform("sum")
+contribution_table.to_csv(RESULTS_DIR / "contributions.csv", index=False)
+
+with pd.option_context(
+    "display.width", 250, "display.max_colwidth", 70, "display.precision", 3
+):
+    for case in functional_units:
+        df = contribution_table[contribution_table["case"] == case]
+        print(
+            f"\n=== {case}: {df['kg CO2-eq per m2 panel'].sum():.2f} kg CO2-eq per m2"
+        )
+        print("by foreground activity (DPP level):")
+        print(
+            df.groupby("foreground activity")[
+                ["kg CO2-eq per m2 panel", "share of score"]
+            ]
+            .sum()
+            .sort_values("kg CO2-eq per m2 panel", ascending=False)
+        )
+        print("largest inputs (summed over foreground activities):")
+        print(
+            df.groupby("input")[["kg CO2-eq per m2 panel", "share of score"]]
+            .sum()
+            .sort_values("kg CO2-eq per m2 panel", ascending=False)
+            .head(10)
+        )
 
 # %% Monte Carlo Analysis
 bw.projects.set_current(project_name)  # SI4 switches to the ecoinvent project
@@ -785,4 +879,13 @@ mc_runs.to_csv(RESULTS_DIR / "monte_carlo_runs.csv")
 mc_summary.to_csv(RESULTS_DIR / "monte_carlo_summary.csv")
 log_time(f"Monte Carlo ({MC_RUNS} runs per case) done")
 
-# %%
+# %% Save results to Excel
+with pd.ExcelWriter(
+    SI_DIR / "SI3 - LCA Results.xlsx",
+    engine="openpyxl",
+    mode="a",  # append: keep existing workbook
+    if_sheet_exists="replace",  # what to do if the sheet already exists
+) as writer:
+    results.to_excel(writer, sheet_name="Results")
+    mc_summary.to_excel(writer, sheet_name="MC summary")
+    mc_runs.to_excel(writer, sheet_name="MC runs")
