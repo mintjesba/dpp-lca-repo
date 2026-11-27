@@ -879,6 +879,281 @@ mc_runs.to_csv(RESULTS_DIR / "monte_carlo_runs.csv")
 mc_summary.to_csv(RESULTS_DIR / "monte_carlo_summary.csv")
 log_time(f"Monte Carlo ({MC_RUNS} runs per case) done")
 
+# %% Contribution analysis
+bw.projects.set_current(project_name)  # SI4 ends in the ecoinvent project
+lca.switch_method(method_ef31)
+lca.fix_dictionaries()
+
+A = lca.technosphere_matrix.tocsc()
+# direct impact per unit of each activity, and life-cycle impact per unit of each product
+h = np.asarray((lca.characterization_matrix @ lca.biosphere_matrix).sum(axis=0)).ravel()
+s = scipy.linalg.lu_solve(_lu, h, trans=1, check_finite=False)
+
+rev_act, rev_prod, _ = lca.reverse_dict()
+foreground_keys = [key for key in lca.activity_dict if key[0].startswith(pv_db_name)]
+foreground_cols = [lca.activity_dict[key] for key in foreground_keys]
+foreground_rows = {lca.product_dict[key] for key in foreground_keys}
+
+
+def contributions(case, functional_unit):
+    lca.redo_lcia(functional_unit)
+    x = lca.supply_array
+    rows = []
+    for col in foreground_cols:
+        if x[col] == 0:
+            continue
+        activity = bw.get_activity(rev_act[col])
+        rows.append(
+            {
+                "case": case,
+                "foreground activity": activity["name"],
+                "input": "direct emissions",
+                "input database": "",
+                "input location": "",
+                "kg CO2-eq per m2 panel": h[col] * x[col],
+            }
+        )
+        column = A[:, col]
+        for row, amount in zip(column.indices, column.data):
+            if row in foreground_rows:
+                continue  # production exchange or component: counted at its own level
+            supplier = bw.get_activity(rev_prod[row])
+            rows.append(
+                {
+                    "case": case,
+                    "foreground activity": activity["name"],
+                    "input": supplier["name"],
+                    "input database": supplier["database"],
+                    "input location": supplier.get("location", ""),
+                    "kg CO2-eq per m2 panel": -amount * x[col] * s[row],
+                }
+            )
+    df = pd.DataFrame(rows)
+    total = df["kg CO2-eq per m2 panel"].sum()
+    assert np.isclose(total, lca.score, rtol=1e-6), (case, total, lca.score)
+    return df
+
+
+contribution_table = pd.concat(
+    [contributions(case, fu) for case, fu in functional_units.items()],
+    ignore_index=True,
+)
+contribution_table["share of score"] = contribution_table[
+    "kg CO2-eq per m2 panel"
+] / contribution_table.groupby("case")["kg CO2-eq per m2 panel"].transform("sum")
+contribution_table.to_csv(RESULTS_DIR / "contributions.csv", index=False)
+
+# %%
+VALUE = "kg CO2-eq per m2 panel"
+TOP_N = 15
+GRID = "electricity, medium voltage, at grid"
+PANEL = "photovoltaic panel, single-Si, at plant"
+CAML_CASES = {
+    "CAML LCA": "caml_automated",
+    "CAML LCA (reviewer, top 5)": "caml_human_in_the_loop",
+}
+
+# value-chain levels, from product to raw material
+LEVELS = {
+    "photovoltaic panel": "PV panel",
+    "photovoltaic cell": "PV cell",
+    "single-Si wafer": "single-Si wafer",
+    "CZ single crystalline silicon": "CZ silicon",
+    "silicon, production mix": "silicon production mix",
+    "silicon, solar grade": "solar-grade silicon",
+    "MG-silicon": "MG silicon",
+}
+
+contributions = pd.read_csv(RESULTS_DIR / "contributions.csv")
+contributions["input"] = contributions["input"].fillna("direct emissions")
+contributions["process"] = (
+    contributions["foreground activity"].str.rsplit(" - ", n=1).str[0]
+)
+mapping = {
+    sheet: pd.read_excel(SI2, sheet_name=sheet).set_index("description")
+    for sheet in ["manual", *CAML_CASES.values()]
+}
+
+
+def by_case(case):
+    return contributions[contributions["case"] == case]
+
+
+# ---------------------------------------------------------------------------- levels
+def level(row):
+    if row["case"] == "single LCA":  # the cell is a direct EXIOBASE input of the panel
+        return "PV cell" if row["input database"] == "EXIO3H" else "PV panel"
+    return next(
+        (
+            label
+            for prefix, label in LEVELS.items()
+            if row["process"].startswith(prefix)
+        ),
+        row["process"],
+    )
+
+
+cases = ["full LCA", "single LCA", *CAML_CASES]
+data = contributions[contributions["case"].isin(cases)].assign(
+    level=lambda df: df.apply(level, axis=1)
+)
+levels = data.pivot_table(index="level", columns="case", values=VALUE, aggfunc="sum")
+levels = levels.reindex(index=list(LEVELS.values()), columns=cases)
+levels.loc["total"] = levels.sum()
+
+
+# ---------------------------------------------------------------------------- top inputs
+def linked_to(case, input_name, database):
+    """EXIOBASE category (code) that an input is linked to in this case."""
+    if input_name == "direct emissions":
+        return "direct emissions of the DPP process"
+    if input_name == GRID:
+        return "grid mix (SI2, 'grid_mix')"
+    if database == "EXIO3H":  # BoM materials and the single-process cell
+        return "EXIOBASE activity (linked directly)"
+    sheet = CAML_CASES.get(case, "manual")
+    row = mapping[sheet].loc[input_name]
+    return f"{row['EXIO3 description']} ({row['EXIO3 code']})"
+
+
+def top_inputs_for(case):
+    df = (
+        by_case(case)
+        .groupby(["input", "input database"], dropna=False)[VALUE]
+        .sum()
+        .reset_index()
+        .query(f"`{VALUE}` != 0")
+        .sort_values(VALUE, ascending=False)
+    )
+    df["linked to"] = [
+        linked_to(case, i, d) for i, d in zip(df["input"], df["input database"])
+    ]
+    top = df.head(TOP_N)[["input", "linked to", VALUE]]
+    rest = df.iloc[TOP_N:]
+    if len(rest):
+        top.loc[len(top)] = [f"other ({len(rest)} inputs)", "", rest[VALUE].sum()]
+    top.loc[len(top)] = ["total", "", df[VALUE].sum()]
+    top["share of score"] = top[VALUE] / df[VALUE].sum()
+    return top.assign(case=case).set_index(["case", "input"])
+
+
+top_inputs = pd.concat(top_inputs_for(case) for case in contributions["case"].unique())
+
+
+# ---------------------------------------------------------------------------- R1 bridge
+PLASTICS = (
+    "ethylvinylacetate",
+    "polyethylene",
+    "polyvinylfluoride",
+    "polyamide",
+    "plastic",
+)
+BOM_MATERIALS = {
+    "Aluminium": "aluminium",
+    "glass": "glass",
+    "Precious": "silver / metallisation paste",
+    "Plastics": "plastics",
+    "Chemicals": "silicon",
+    "Copper": "copper and tin",
+    "tin": "copper and tin",
+}
+
+
+def bridge_group(row):
+    name, on_panel = row["input"], row["process"].startswith(PANEL)
+    if row["case"].startswith("BoM"):
+        return next(
+            (g for key, g in BOM_MATERIALS.items() if key in name), "other materials"
+        )
+    if name == "direct emissions":
+        return "processing: direct emissions"
+    if name.startswith("electricity"):
+        return (
+            "processing: electricity, panel"
+            if on_panel
+            else "processing: electricity, Si-wafer-cell chain"
+        )
+    if "metallization paste" in name:
+        return "silver / metallisation paste"
+    if on_panel and "aluminium" in name:
+        return "aluminium"
+    if on_panel and ("solar glass" in name or "tempering" in name):
+        return "glass"
+    if on_panel and any(p in name for p in PLASTICS):
+        return "plastics"
+    if name.startswith(("copper, at", "tin, at")):
+        return "copper and tin"
+    return "processing: other inputs"
+
+
+bom_cases = ["full LCA", "BoM LCA", "BoM LCA (with location)"]
+data = contributions[contributions["case"].isin(bom_cases)].assign(
+    group=lambda df: df.apply(bridge_group, axis=1)
+)
+bom_bridge = data.pivot_table(
+    index="group", columns="case", values=VALUE, aggfunc="sum", fill_value=0
+)
+bom_bridge = bom_bridge[bom_cases]
+bom_bridge = bom_bridge[bom_bridge.abs().sum(axis=1) > 0].sort_index(
+    key=lambda idx: ~idx.str.startswith("processing")  # processing rows first
+)
+bom_bridge.loc["total"] = bom_bridge.sum()
+bom_bridge["difference, BoM"] = bom_bridge["BoM LCA"] - bom_bridge["full LCA"]
+bom_bridge["difference, BoM with location"] = (
+    bom_bridge["BoM LCA (with location)"] - bom_bridge["full LCA"]
+)
+
+
+# ---------------------------------------------------------------------------- R4 matching
+def outcome(input_name, sheet):
+    manual_code = mapping["manual"]["EXIO3 code"].get(input_name)
+    row = mapping[sheet].loc[input_name]
+    if pd.isna(row["conversion factor"]):
+        return "dropped"
+    return "same" if row["EXIO3 code"] == manual_code else "remapped"
+
+
+per_input = pd.DataFrame(
+    {
+        case: by_case(case).groupby("input")[VALUE].sum()
+        for case in ["full LCA", *CAML_CASES]
+    }
+).fillna(0)
+# keep inputs whose contribution differs in either CAML case (grid electricity uses the grid
+# mix in all cases)
+differs = (
+    per_input[list(CAML_CASES)]
+    .sub(per_input["full LCA"], axis=0)
+    .abs()
+    .gt(0.005)
+    .any(axis=1)
+)
+inputs = per_input.index[differs & (per_input.index != GRID)]
+
+matching = pd.DataFrame(
+    {
+        "manual code": mapping["manual"]["EXIO3 code"].reindex(inputs),
+        "baseline": per_input.loc[inputs, "full LCA"],
+    }
+)
+for case, sheet in CAML_CASES.items():
+    matching[f"{case}: code"] = mapping[sheet]["EXIO3 code"].reindex(inputs)
+    matching[f"{case}: outcome"] = [outcome(i, sheet) for i in inputs]
+    matching[case] = per_input.loc[inputs, case]
+    matching[f"{case}: difference"] = matching[case] - matching["baseline"]
+matching = matching.sort_values(f"{next(iter(CAML_CASES))}: difference").rename_axis(
+    "input"
+)
+
+matching_summary = pd.DataFrame(
+    {
+        case: matching.groupby(f"{case}: outcome")[f"{case}: difference"].sum()
+        for case in CAML_CASES
+    }
+).fillna(0)
+matching_summary.loc["total"] = matching_summary.sum()
+
+
 # %% Save results to Excel
 with pd.ExcelWriter(
     SI_DIR / "SI3 - LCA Results.xlsx",
@@ -889,3 +1164,8 @@ with pd.ExcelWriter(
     results.to_excel(writer, sheet_name="Results")
     mc_summary.to_excel(writer, sheet_name="MC summary")
     mc_runs.to_excel(writer, sheet_name="MC runs")
+    levels.round(2).to_excel(writer, sheet_name="levels")
+    top_inputs.round(3).to_excel(writer, sheet_name="CA: top inputs")
+    bom_bridge.round(2).to_excel(writer, sheet_name="CA: R1 BoM vs full LCI")
+    matching.round(2).to_excel(writer, sheet_name="CA: R4 matching")
+    matching_summary.round(2).to_excel(writer, sheet_name="CA: R4 matching summary")
